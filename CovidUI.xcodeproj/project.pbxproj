@@ -1,0 +1,500 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		06E4DF492434A5FE00092990 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF482434A5FE00092990 /* AppDelegate.swift */; };
+		06E4DF4B2434A5FE00092990 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF4A2434A5FE00092990 /* SceneDelegate.swift */; };
+		06E4DF4D2434A5FE00092990 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF4C2434A5FE00092990 /* ContentView.swift */; };
+		06E4DF4F2434A60000092990 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 06E4DF4E2434A60000092990 /* Assets.xcassets */; };
+		06E4DF522434A60000092990 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 06E4DF512434A60000092990 /* Preview Assets.xcassets */; };
+		06E4DF552434A60000092990 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 06E4DF532434A60000092990 /* LaunchScreen.storyboard */; };
+		06E4DF5E2434A72700092990 /* Neumorphic in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF5D2434A72700092990 /* Neumorphic */; };
+		06E4DF602434A73C00092990 /* FeaturedCountryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */; };
+		06E4DF632434A77300092990 /* FancyScrollView in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF622434A77300092990 /* FancyScrollView */; };
+		06E4DF662434A7B800092990 /* SwiftUICharts in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF652434A7B800092990 /* SwiftUICharts */; };
+		06E4DF682434A8E600092990 /* emoji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF672434A8E600092990 /* emoji.swift */; };
+		06E4DF6A2434CF7800092990 /* CurrentStateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF692434CF7800092990 /* CurrentStateCell.swift */; };
+		06E4DF6C2434D3E300092990 /* BasicCountryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF6B2434D3E300092990 /* BasicCountryCell.swift */; };
+		06E4DF6E2434DD2F00092990 /* Neumorphic+init.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */; };
+		06E4DF702434DDA300092990 /* NeumorphicCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF6F2434DDA300092990 /* NeumorphicCard.swift */; };
+		06E4DF722435099200092990 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF712435099200092990 /* Background.swift */; };
+		06E4DF74243666D600092990 /* NewsStoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF73243666D600092990 /* NewsStoryCell.swift */; };
+		06E4DF77243685AE00092990 /* URLImage in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF76243685AE00092990 /* URLImage */; };
+		8729994F126CC2AD4E24E708 /* Graphaello.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2F68FB97F5367A6D95789C /* Graphaello.swift */; };
+		8FE9A71E3BFF451C0ADF50BD /* Covid.graphql.json in Sources */ = {isa = PBXBuildFile; fileRef = ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */; };
+		B88C67CDA88E541EE7D8E46C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 809A06EB356EA8910AEB4246 /* Apollo */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		06E4DF452434A5FE00092990 /* CovidUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CovidUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		06E4DF482434A5FE00092990 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		06E4DF4A2434A5FE00092990 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		06E4DF4C2434A5FE00092990 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		06E4DF4E2434A60000092990 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		06E4DF512434A60000092990 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		06E4DF542434A60000092990 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		06E4DF562434A60000092990 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturedCountryCell.swift; sourceTree = "<group>"; };
+		06E4DF672434A8E600092990 /* emoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = emoji.swift; sourceTree = "<group>"; };
+		06E4DF692434CF7800092990 /* CurrentStateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStateCell.swift; sourceTree = "<group>"; };
+		06E4DF6B2434D3E300092990 /* BasicCountryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicCountryCell.swift; sourceTree = "<group>"; };
+		06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Neumorphic+init.swift"; sourceTree = "<group>"; };
+		06E4DF6F2434DDA300092990 /* NeumorphicCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicCard.swift; sourceTree = "<group>"; };
+		06E4DF712435099200092990 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
+		06E4DF73243666D600092990 /* NewsStoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStoryCell.swift; sourceTree = "<group>"; };
+		7C2F68FB97F5367A6D95789C /* Graphaello.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Graphaello.swift; sourceTree = "<group>"; };
+		ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = Covid.graphql.json; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		06E4DF422434A5FE00092990 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06E4DF632434A77300092990 /* FancyScrollView in Frameworks */,
+				06E4DF662434A7B800092990 /* SwiftUICharts in Frameworks */,
+				06E4DF5E2434A72700092990 /* Neumorphic in Frameworks */,
+				06E4DF77243685AE00092990 /* URLImage in Frameworks */,
+				B88C67CDA88E541EE7D8E46C /* Apollo in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		06E4DF3C2434A5FE00092990 = {
+			isa = PBXGroup;
+			children = (
+				06E4DF472434A5FE00092990 /* CovidUI */,
+				06E4DF462434A5FE00092990 /* Products */,
+				7C2F68FB97F5367A6D95789C /* Graphaello.swift */,
+				ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */,
+			);
+			sourceTree = "<group>";
+		};
+		06E4DF462434A5FE00092990 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				06E4DF452434A5FE00092990 /* CovidUI.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		06E4DF472434A5FE00092990 /* CovidUI */ = {
+			isa = PBXGroup;
+			children = (
+				06E4DF482434A5FE00092990 /* AppDelegate.swift */,
+				06E4DF4A2434A5FE00092990 /* SceneDelegate.swift */,
+				06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */,
+				06E4DF692434CF7800092990 /* CurrentStateCell.swift */,
+				06E4DF73243666D600092990 /* NewsStoryCell.swift */,
+				06E4DF672434A8E600092990 /* emoji.swift */,
+				06E4DF4C2434A5FE00092990 /* ContentView.swift */,
+				06E4DF712435099200092990 /* Background.swift */,
+				06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */,
+				06E4DF6B2434D3E300092990 /* BasicCountryCell.swift */,
+				06E4DF6F2434DDA300092990 /* NeumorphicCard.swift */,
+				06E4DF4E2434A60000092990 /* Assets.xcassets */,
+				06E4DF532434A60000092990 /* LaunchScreen.storyboard */,
+				06E4DF562434A60000092990 /* Info.plist */,
+				06E4DF502434A60000092990 /* Preview Content */,
+			);
+			path = CovidUI;
+			sourceTree = "<group>";
+		};
+		06E4DF502434A60000092990 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				06E4DF512434A60000092990 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		06E4DF442434A5FE00092990 /* CovidUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 06E4DF592434A60000092990 /* Build configuration list for PBXNativeTarget "CovidUI" */;
+			buildPhases = (
+				688B767EF72B31B8A5A51D78 /* Graphaello */,
+				06E4DF412434A5FE00092990 /* Sources */,
+				06E4DF422434A5FE00092990 /* Frameworks */,
+				06E4DF432434A5FE00092990 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CovidUI;
+			packageProductDependencies = (
+				809A06EB356EA8910AEB4246 /* Apollo */,
+				06E4DF5D2434A72700092990 /* Neumorphic */,
+				06E4DF622434A77300092990 /* FancyScrollView */,
+				06E4DF652434A7B800092990 /* SwiftUICharts */,
+				06E4DF76243685AE00092990 /* URLImage */,
+			);
+			productName = Covid;
+			productReference = 06E4DF452434A5FE00092990 /* CovidUI.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		06E4DF3D2434A5FE00092990 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1140;
+				LastUpgradeCheck = 1140;
+				ORGANIZATIONNAME = Mathias.Quintero;
+				TargetAttributes = {
+					06E4DF442434A5FE00092990 = {
+						CreatedOnToolsVersion = 11.4;
+					};
+				};
+			};
+			buildConfigurationList = 06E4DF402434A5FE00092990 /* Build configuration list for PBXProject "CovidUI" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 06E4DF3C2434A5FE00092990;
+			packageReferences = (
+				8FB233A213693C291C26427B /* XCRemoteSwiftPackageReference "apollo-ios" */,
+				06E4DF5C2434A72700092990 /* XCRemoteSwiftPackageReference "neumorphic" */,
+				06E4DF612434A77300092990 /* XCRemoteSwiftPackageReference "FancyScrollView" */,
+				06E4DF642434A7B800092990 /* XCRemoteSwiftPackageReference "ChartView" */,
+				06E4DF75243685AE00092990 /* XCRemoteSwiftPackageReference "url-image" */,
+			);
+			productRefGroup = 06E4DF462434A5FE00092990 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				06E4DF442434A5FE00092990 /* CovidUI */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		06E4DF432434A5FE00092990 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06E4DF552434A60000092990 /* LaunchScreen.storyboard in Resources */,
+				06E4DF522434A60000092990 /* Preview Assets.xcassets in Resources */,
+				06E4DF4F2434A60000092990 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		688B767EF72B31B8A5A51D78 /* Graphaello */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = Graphaello;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\ngraphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		06E4DF412434A5FE00092990 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06E4DF602434A73C00092990 /* FeaturedCountryCell.swift in Sources */,
+				06E4DF74243666D600092990 /* NewsStoryCell.swift in Sources */,
+				06E4DF682434A8E600092990 /* emoji.swift in Sources */,
+				06E4DF492434A5FE00092990 /* AppDelegate.swift in Sources */,
+				06E4DF6E2434DD2F00092990 /* Neumorphic+init.swift in Sources */,
+				06E4DF4B2434A5FE00092990 /* SceneDelegate.swift in Sources */,
+				06E4DF4D2434A5FE00092990 /* ContentView.swift in Sources */,
+				8729994F126CC2AD4E24E708 /* Graphaello.swift in Sources */,
+				8FE9A71E3BFF451C0ADF50BD /* Covid.graphql.json in Sources */,
+				06E4DF6C2434D3E300092990 /* BasicCountryCell.swift in Sources */,
+				06E4DF702434DDA300092990 /* NeumorphicCard.swift in Sources */,
+				06E4DF6A2434CF7800092990 /* CurrentStateCell.swift in Sources */,
+				06E4DF722435099200092990 /* Background.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		06E4DF532434A60000092990 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				06E4DF542434A60000092990 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		06E4DF572434A60000092990 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		06E4DF582434A60000092990 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		06E4DF5A2434A60000092990 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"CovidUI/Preview Content\"";
+				DEVELOPMENT_TEAM = KJPP698PR3;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = CovidUI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		06E4DF5B2434A60000092990 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"CovidUI/Preview Content\"";
+				DEVELOPMENT_TEAM = KJPP698PR3;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = CovidUI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		06E4DF402434A5FE00092990 /* Build configuration list for PBXProject "CovidUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06E4DF572434A60000092990 /* Debug */,
+				06E4DF582434A60000092990 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		06E4DF592434A60000092990 /* Build configuration list for PBXNativeTarget "CovidUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06E4DF5A2434A60000092990 /* Debug */,
+				06E4DF5B2434A60000092990 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		06E4DF5C2434A72700092990 /* XCRemoteSwiftPackageReference "neumorphic" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/costachung/neumorphic.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		06E4DF612434A77300092990 /* XCRemoteSwiftPackageReference "FancyScrollView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nerdsupremacist/FancyScrollView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
+			};
+		};
+		06E4DF642434A7B800092990 /* XCRemoteSwiftPackageReference "ChartView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AppPear/ChartView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+		06E4DF75243685AE00092990 /* XCRemoteSwiftPackageReference "url-image" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dmytro-anokhin/url-image.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.13;
+			};
+		};
+		8FB233A213693C291C26427B /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		06E4DF5D2434A72700092990 /* Neumorphic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 06E4DF5C2434A72700092990 /* XCRemoteSwiftPackageReference "neumorphic" */;
+			productName = Neumorphic;
+		};
+		06E4DF622434A77300092990 /* FancyScrollView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 06E4DF612434A77300092990 /* XCRemoteSwiftPackageReference "FancyScrollView" */;
+			productName = FancyScrollView;
+		};
+		06E4DF652434A7B800092990 /* SwiftUICharts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 06E4DF642434A7B800092990 /* XCRemoteSwiftPackageReference "ChartView" */;
+			productName = SwiftUICharts;
+		};
+		06E4DF76243685AE00092990 /* URLImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 06E4DF75243685AE00092990 /* XCRemoteSwiftPackageReference "url-image" */;
+			productName = URLImage;
+		};
+		809A06EB356EA8910AEB4246 /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8FB233A213693C291C26427B /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 06E4DF3D2434A5FE00092990 /* Project object */;
+}
