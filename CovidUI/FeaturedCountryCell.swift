@@ -5,6 +5,7 @@ import Neumorphic
 import SwiftUICharts
 
 struct FeaturedCountryCell: View {
+    let api: Covid
 
     @GraphQL(Covid.Country.name)
     var name: String

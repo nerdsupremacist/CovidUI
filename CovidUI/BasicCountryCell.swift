@@ -3,6 +3,8 @@ import Foundation
 import SwiftUI
 
 struct BasicCountryCell: View {
+    let api: Covid
+    
     @GraphQL(Covid.Country.name)
     var name: String
 
@@ -13,11 +15,13 @@ struct BasicCountryCell: View {
     var cases: Int
 
     var body: some View {
-        HStack {
-            countryCode.flatMap(emoji(countryCode:)).map { Text($0).bold() }
-            Text(name).bold()
-            Spacer()
-            Text("\(cases) Cases")
+        NavigationLink(destination: api.countryDetailView(name: name)) {
+            HStack {
+                countryCode.flatMap(emoji(countryCode:)).map { Text($0).bold().foregroundColor(.primary) }
+                Text(name).bold().foregroundColor(.primary)
+                Spacer()
+                Text("\(cases) Cases").foregroundColor(.secondary)
+            }
         }
     }
 }

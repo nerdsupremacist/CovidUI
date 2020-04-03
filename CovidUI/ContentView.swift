@@ -4,6 +4,8 @@ import FancyScrollView
 import SwiftUICharts
 
 struct ContentView: View {
+    let api: Covid
+
     @GraphQL(Covid.myCountry)
     var currentCountry: FeaturedCountryCell.Country?
 
@@ -31,6 +33,9 @@ struct ContentView: View {
     @GraphQL(Covid.countries)
     var countries: [BasicCountryCell.Country]
 
+    @GraphQL(Covid.countries)
+    var pins: [CountryMapPin.Country]
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -38,16 +43,25 @@ struct ContentView: View {
                 
                 FancyScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Covid-19")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                            .padding(.horizontal, 16)
+                        HStack(alignment: .top) {
+                            Text("Covid-19")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Text("#stayhome")
+                                .font(.callout)
+                                .fontWeight(.light)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
 
                         currentCountry.map { country in
                             VStack(alignment: .leading) {
                                 Text("For You").font(.title).fontWeight(.medium).foregroundColor(.primary)
-                                FeaturedCountryCell(country: country)
+                                FeaturedCountryCell(api: api, country: country)
                             }
                             .padding(.horizontal, 16)
                         }
@@ -74,51 +88,67 @@ struct ContentView: View {
                             }
                         }
 
-                        Text("Around the World")
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-                            .padding(.horizontal, 16)
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Around the World")
+                                .font(.title)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 16)
 
-                        CurrentStateCell(world: world)
-                            .padding(.horizontal, 16)
+                            CurrentStateCell(world: world)
+                                .padding(.horizontal, 16)
 
-                        NeumporphicCard {
-                            LineView(data: cases.map(Double.init), title: "Cases", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
-                                .frame(height: 340)
-                                .padding([.horizontal, .bottom], 16)
+                            NeumporphicCard {
+                                LineView(data: cases.map(Double.init), title: "Cases", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
+                                    .frame(height: 340)
+                                    .padding([.horizontal, .bottom], 16)
+                            }
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
 
-                        Text("News")
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-                            .padding(.horizontal, 16)
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("News")
+                                .font(.title)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 16)
 
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(alignment: .center) {
-                                Spacer()
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(alignment: .center) {
+                                    Spacer()
 
-                                ForEach(news, id: \.title) { news in
-                                    NewsStoryCell(newsStory: news).frame(width: 280, height: 340).padding(.vertical, 16).padding(.horizontal, 8)
+                                    ForEach(news, id: \.title) { news in
+                                        NewsStoryCell(newsStory: news).frame(width: 280, height: 340).padding(.vertical, 16).padding(.horizontal, 8)
+                                    }
                                 }
                             }
                         }
 
-                        Text("Countries")
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-                            .padding(.horizontal, 16)
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Map")
+                                .font(.title)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 16)
 
-                        ForEach(countries, id: \.name) { country in
-                            VStack {
-                                Divider()
-                                BasicCountryCell(country: country)
-                            }
+                            MapView(pins: pins.map(CountryMapPin.init)).frame(height: 400)
                         }
-                        .padding(.horizontal, 16)
+
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Countries")
+                                .font(.title)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 16)
+
+                            ForEach(countries, id: \.name) { country in
+                                VStack {
+                                    Divider()
+                                    BasicCountryCell(api: self.api, country: country)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                        }
                     }
                 }
             }

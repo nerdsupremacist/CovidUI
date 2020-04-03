@@ -31,7 +31,7 @@ struct CurrentStateCell: View {
                 }
 
                 Spacer()
-                Divider().padding(.vertical, 8).foregroundColor(.primary)
+                Divider().padding(.vertical, 8)
                 Spacer()
 
                 VStack {
@@ -40,7 +40,6 @@ struct CurrentStateCell: View {
                 }
             }
             .padding(.horizontal, 32)
-            .padding(.vertical, 24)
         }
     }
 

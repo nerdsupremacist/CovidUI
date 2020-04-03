@@ -646,6 +646,10 @@ struct Covid: API {
 
         static var iso3: Path<String?> { .init() }
 
+        static var latitude: Path<Double?> { .init() }
+
+        static var longitude: Path<Double?> { .init() }
+
         static var _fragment: FragmentPath<Info> { .init() }
     }
 
@@ -661,11 +665,11 @@ struct Covid: API {
 
         static var overview: Path<String?> { .init() }
 
-        static var published: Path<String> { .init() }
-
         static var source: FragmentPath<Covid.Source> { .init() }
 
         static var title: Path<String> { .init() }
+
+        static var url: Path<String> { .init() }
 
         static var _fragment: FragmentPath<NewsStory> { .init() }
     }
@@ -808,6 +812,10 @@ extension GraphQLFragmentPath where UnderlyingType == Covid.Info {
     var iso2: Path<String?> { .init() }
 
     var iso3: Path<String?> { .init() }
+
+    var latitude: Path<Double?> { .init() }
+
+    var longitude: Path<Double?> { .init() }
 }
 
 extension GraphQLFragmentPath where UnderlyingType == Covid.Info? {
@@ -816,6 +824,10 @@ extension GraphQLFragmentPath where UnderlyingType == Covid.Info? {
     var iso2: Path<String?> { .init() }
 
     var iso3: Path<String?> { .init() }
+
+    var latitude: Path<Double?> { .init() }
+
+    var longitude: Path<Double?> { .init() }
 }
 
 extension GraphQLFragmentPath where UnderlyingType == Covid.NewsStory {
@@ -827,11 +839,11 @@ extension GraphQLFragmentPath where UnderlyingType == Covid.NewsStory {
 
     var overview: Path<String?> { .init() }
 
-    var published: Path<String> { .init() }
-
     var source: FragmentPath<Covid.Source> { .init() }
 
     var title: Path<String> { .init() }
+
+    var url: Path<String> { .init() }
 }
 
 extension GraphQLFragmentPath where UnderlyingType == Covid.NewsStory? {
@@ -843,11 +855,11 @@ extension GraphQLFragmentPath where UnderlyingType == Covid.NewsStory? {
 
     var overview: Path<String?> { .init() }
 
-    var published: Path<String?> { .init() }
-
     var source: FragmentPath<Covid.Source?> { .init() }
 
     var title: Path<String?> { .init() }
+
+    var url: Path<String?> { .init() }
 }
 
 extension GraphQLFragmentPath where UnderlyingType == Covid.Source {
@@ -923,10 +935,28 @@ extension ApolloCovid.BasicCountryCellCountry: Fragment {
 extension BasicCountryCell {
     typealias Country = ApolloCovid.BasicCountryCellCountry
 
-    init(country: Country) {
-        self.init(name: GraphQL(country.name),
+    init(api: Covid,
+         country: Country) {
+        self.init(api: api,
+                  name: GraphQL(country.name),
                   countryCode: GraphQL(country.info.iso2),
                   cases: GraphQL(country.cases))
+    }
+}
+
+// MARK: - CountryMapPin
+
+extension ApolloCovid.CountryMapPinCountry: Fragment {
+    typealias UnderlyingType = Covid.Country
+}
+
+extension CountryMapPin {
+    typealias Country = ApolloCovid.CountryMapPinCountry
+
+    init(country: Country) {
+        self.init(cases: GraphQL(country.cases),
+                  latitude: GraphQL(country.info.latitude),
+                  longitude: GraphQL(country.info.longitude))
     }
 }
 
@@ -955,8 +985,10 @@ extension ApolloCovid.FeaturedCountryCellCountry: Fragment {
 extension FeaturedCountryCell {
     typealias Country = ApolloCovid.FeaturedCountryCellCountry
 
-    init(country: Country) {
-        self.init(name: GraphQL(country.name),
+    init(api: Covid,
+         country: Country) {
+        self.init(api: api,
+                  name: GraphQL(country.name),
                   countryCode: GraphQL(country.info.iso2),
                   cases: GraphQL(country.cases),
                   deaths: GraphQL(country.deaths),
@@ -979,7 +1011,8 @@ extension NewsStoryCell {
         self.init(source: GraphQL(newsStory.source.name),
                   title: GraphQL(newsStory.title),
                   overview: GraphQL(newsStory.overview),
-                  image: GraphQL(newsStory.image))
+                  image: GraphQL(newsStory.image),
+                  url: GraphQL(newsStory.url))
     }
 }
 
@@ -988,8 +1021,10 @@ extension NewsStoryCell {
 extension ContentView {
     typealias Data = ApolloCovid.ContentViewQuery.Data
 
-    init(data: Data) {
-        self.init(currentCountry: GraphQL(data.myCountry?.fragments.featuredCountryCellCountry),
+    init(api: Covid,
+         data: Data) {
+        self.init(api: api,
+                  currentCountry: GraphQL(data.myCountry?.fragments.featuredCountryCellCountry),
                   currentCountryName: GraphQL(data.myCountry?.name),
                   currentCountryNews: GraphQL(data.myCountry?.news.map { $0.fragments.newsStoryCellNewsStory }),
                   world: GraphQL(data.world.fragments.currentStateCellWorld),
@@ -997,7 +1032,8 @@ extension ContentView {
                   deaths: GraphQL(data.world.timeline.deaths.map { $0.value }),
                   recovered: GraphQL(data.world.timeline.recovered.map { $0.value }),
                   news: GraphQL(data.world.news.map { $0.fragments.newsStoryCellNewsStory }),
-                  countries: GraphQL(data.countries.map { $0.fragments.basicCountryCellCountry }))
+                  countries: GraphQL(data.countries.map { $0.fragments.basicCountryCellCountry }),
+                  pins: GraphQL(data.countries.map { $0.fragments.countryMapPinCountry }))
     }
 }
 
@@ -1006,7 +1042,39 @@ extension Covid {
         return QueryRenderer(client: client,
                              query: ApolloCovid.ContentViewQuery()) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
-            ContentView(data: data)
+            ContentView(api: self,
+                        data: data)
+        }
+    }
+}
+
+// MARK: - CountryDetailView
+
+extension CountryDetailView {
+    typealias Data = ApolloCovid.CountryDetailViewQuery.Data
+
+    init(data: Data) {
+        self.init(name: GraphQL((data.country!).name),
+                  countryCode: GraphQL((data.country!).info.iso2),
+                  cases: GraphQL((data.country!).cases),
+                  deaths: GraphQL((data.country!).deaths),
+                  recovered: GraphQL((data.country!).recovered),
+                  casesToday: GraphQL((data.country!).todayCases),
+                  deathsToday: GraphQL((data.country!).todayDeaths),
+                  casesOverTime: GraphQL((data.country!).timeline.cases.map { $0.value }),
+                  deathsOverTime: GraphQL((data.country!).timeline.deaths.map { $0.value }),
+                  recoveredOverTime: GraphQL((data.country!).timeline.recovered.map { $0.value }),
+                  images: GraphQL((data.country!).news.map { $0.image }),
+                  news: GraphQL((data.country!).news.map { $0.fragments.newsStoryCellNewsStory }))
+    }
+}
+
+extension Covid {
+    func countryDetailView(name: String) -> some View {
+        return QueryRenderer(client: client,
+                             query: ApolloCovid.CountryDetailViewQuery(name: name)) { (data: ApolloCovid.CountryDetailViewQuery.Data) -> CountryDetailView in
+
+            CountryDetailView(data: data)
         }
     }
 }
@@ -1027,6 +1095,7 @@ public enum ApolloCovid {
               countries {
                 __typename
                 ...BasicCountryCellCountry
+                ...CountryMapPinCountry
               }
               myCountry {
                 __typename
@@ -1065,7 +1134,7 @@ public enum ApolloCovid {
 
         public let operationName: String = "ContentView"
 
-        public var queryDocument: String { return operationDefinition.appending(BasicCountryCellCountry.fragmentDefinition).appending(FeaturedCountryCellCountry.fragmentDefinition).appending(NewsStoryCellNewsStory.fragmentDefinition).appending(CurrentStateCellWorld.fragmentDefinition) }
+        public var queryDocument: String { return operationDefinition.appending(BasicCountryCellCountry.fragmentDefinition).appending(CountryMapPinCountry.fragmentDefinition).appending(FeaturedCountryCellCountry.fragmentDefinition).appending(NewsStoryCellNewsStory.fragmentDefinition).appending(CurrentStateCellWorld.fragmentDefinition) }
 
         public init() {}
 
@@ -1121,6 +1190,7 @@ public enum ApolloCovid {
                 public static let selections: [GraphQLSelection] = [
                     GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
                     GraphQLFragmentSpread(BasicCountryCellCountry.self),
+                    GraphQLFragmentSpread(CountryMapPinCountry.self),
                 ]
 
                 public private(set) var resultMap: ResultMap
@@ -1157,6 +1227,15 @@ public enum ApolloCovid {
                     public var basicCountryCellCountry: BasicCountryCellCountry {
                         get {
                             return BasicCountryCellCountry(unsafeResultMap: resultMap)
+                        }
+                        set {
+                            resultMap += newValue.resultMap
+                        }
+                    }
+
+                    public var countryMapPinCountry: CountryMapPinCountry {
+                        get {
+                            return CountryMapPinCountry(unsafeResultMap: resultMap)
                         }
                         set {
                             resultMap += newValue.resultMap
@@ -1575,6 +1654,471 @@ public enum ApolloCovid {
         }
     }
 
+    public final class CountryDetailViewQuery: GraphQLQuery {
+        /// The raw GraphQL definition of this operation.
+        public let operationDefinition: String =
+            """
+            query CountryDetailView($name: String!) {
+              country(name: $name) {
+                __typename
+                cases
+                deaths
+                info {
+                  __typename
+                  iso2
+                }
+                name
+                news {
+                  __typename
+                  ...NewsStoryCellNewsStory
+                  image
+                }
+                recovered
+                timeline {
+                  __typename
+                  cases {
+                    __typename
+                    value
+                  }
+                  deaths {
+                    __typename
+                    value
+                  }
+                  recovered {
+                    __typename
+                    value
+                  }
+                }
+                todayCases
+                todayDeaths
+              }
+            }
+            """
+
+        public let operationName: String = "CountryDetailView"
+
+        public var queryDocument: String { return operationDefinition.appending(NewsStoryCellNewsStory.fragmentDefinition) }
+
+        public var name: String
+
+        public init(name: String) {
+            self.name = name
+        }
+
+        public var variables: GraphQLMap? {
+            return ["name": name]
+        }
+
+        public struct Data: GraphQLSelectionSet {
+            public static let possibleTypes: [String] = ["Query"]
+
+            public static let selections: [GraphQLSelection] = [
+                GraphQLField("country", arguments: ["name": GraphQLVariable("name")], type: .object(Country.selections)),
+            ]
+
+            public private(set) var resultMap: ResultMap
+
+            public init(unsafeResultMap: ResultMap) {
+                resultMap = unsafeResultMap
+            }
+
+            public init(country: Country? = nil) {
+                self.init(unsafeResultMap: ["__typename": "Query", "country": country.flatMap { (value: Country) -> ResultMap in value.resultMap }])
+            }
+
+            public var country: Country? {
+                get {
+                    return (resultMap["country"] as? ResultMap).flatMap { Country(unsafeResultMap: $0) }
+                }
+                set {
+                    resultMap.updateValue(newValue?.resultMap, forKey: "country")
+                }
+            }
+
+            public struct Country: GraphQLSelectionSet {
+                public static let possibleTypes: [String] = ["Country"]
+
+                public static let selections: [GraphQLSelection] = [
+                    GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                    GraphQLField("cases", type: .nonNull(.scalar(Int.self))),
+                    GraphQLField("deaths", type: .nonNull(.scalar(Int.self))),
+                    GraphQLField("info", type: .nonNull(.object(Info.selections))),
+                    GraphQLField("name", type: .nonNull(.scalar(String.self))),
+                    GraphQLField("news", type: .nonNull(.list(.nonNull(.object(News.selections))))),
+                    GraphQLField("recovered", type: .nonNull(.scalar(Int.self))),
+                    GraphQLField("timeline", type: .nonNull(.object(Timeline.selections))),
+                    GraphQLField("todayCases", type: .nonNull(.scalar(Int.self))),
+                    GraphQLField("todayDeaths", type: .nonNull(.scalar(Int.self))),
+                ]
+
+                public private(set) var resultMap: ResultMap
+
+                public init(unsafeResultMap: ResultMap) {
+                    resultMap = unsafeResultMap
+                }
+
+                public init(cases: Int, deaths: Int, info: Info, name: String, news: [News], recovered: Int, timeline: Timeline, todayCases: Int, todayDeaths: Int) {
+                    self.init(unsafeResultMap: ["__typename": "Country", "cases": cases, "deaths": deaths, "info": info.resultMap, "name": name, "news": news.map { (value: News) -> ResultMap in value.resultMap }, "recovered": recovered, "timeline": timeline.resultMap, "todayCases": todayCases, "todayDeaths": todayDeaths])
+                }
+
+                public var __typename: String {
+                    get {
+                        return resultMap["__typename"]! as! String
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "__typename")
+                    }
+                }
+
+                public var cases: Int {
+                    get {
+                        return resultMap["cases"]! as! Int
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "cases")
+                    }
+                }
+
+                public var deaths: Int {
+                    get {
+                        return resultMap["deaths"]! as! Int
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "deaths")
+                    }
+                }
+
+                public var info: Info {
+                    get {
+                        return Info(unsafeResultMap: resultMap["info"]! as! ResultMap)
+                    }
+                    set {
+                        resultMap.updateValue(newValue.resultMap, forKey: "info")
+                    }
+                }
+
+                public var name: String {
+                    get {
+                        return resultMap["name"]! as! String
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "name")
+                    }
+                }
+
+                public var news: [News] {
+                    get {
+                        return (resultMap["news"] as! [ResultMap]).map { (value: ResultMap) -> News in News(unsafeResultMap: value) }
+                    }
+                    set {
+                        resultMap.updateValue(newValue.map { (value: News) -> ResultMap in value.resultMap }, forKey: "news")
+                    }
+                }
+
+                public var recovered: Int {
+                    get {
+                        return resultMap["recovered"]! as! Int
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "recovered")
+                    }
+                }
+
+                public var timeline: Timeline {
+                    get {
+                        return Timeline(unsafeResultMap: resultMap["timeline"]! as! ResultMap)
+                    }
+                    set {
+                        resultMap.updateValue(newValue.resultMap, forKey: "timeline")
+                    }
+                }
+
+                public var todayCases: Int {
+                    get {
+                        return resultMap["todayCases"]! as! Int
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "todayCases")
+                    }
+                }
+
+                public var todayDeaths: Int {
+                    get {
+                        return resultMap["todayDeaths"]! as! Int
+                    }
+                    set {
+                        resultMap.updateValue(newValue, forKey: "todayDeaths")
+                    }
+                }
+
+                public struct Info: GraphQLSelectionSet {
+                    public static let possibleTypes: [String] = ["Info"]
+
+                    public static let selections: [GraphQLSelection] = [
+                        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                        GraphQLField("iso2", type: .scalar(String.self)),
+                    ]
+
+                    public private(set) var resultMap: ResultMap
+
+                    public init(unsafeResultMap: ResultMap) {
+                        resultMap = unsafeResultMap
+                    }
+
+                    public init(iso2: String? = nil) {
+                        self.init(unsafeResultMap: ["__typename": "Info", "iso2": iso2])
+                    }
+
+                    public var __typename: String {
+                        get {
+                            return resultMap["__typename"]! as! String
+                        }
+                        set {
+                            resultMap.updateValue(newValue, forKey: "__typename")
+                        }
+                    }
+
+                    public var iso2: String? {
+                        get {
+                            return resultMap["iso2"] as? String
+                        }
+                        set {
+                            resultMap.updateValue(newValue, forKey: "iso2")
+                        }
+                    }
+                }
+
+                public struct News: GraphQLSelectionSet {
+                    public static let possibleTypes: [String] = ["NewsStory"]
+
+                    public static let selections: [GraphQLSelection] = [
+                        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                        GraphQLFragmentSpread(NewsStoryCellNewsStory.self),
+                        GraphQLField("image", type: .scalar(String.self)),
+                    ]
+
+                    public private(set) var resultMap: ResultMap
+
+                    public init(unsafeResultMap: ResultMap) {
+                        resultMap = unsafeResultMap
+                    }
+
+                    public var __typename: String {
+                        get {
+                            return resultMap["__typename"]! as! String
+                        }
+                        set {
+                            resultMap.updateValue(newValue, forKey: "__typename")
+                        }
+                    }
+
+                    public var image: String? {
+                        get {
+                            return resultMap["image"] as? String
+                        }
+                        set {
+                            resultMap.updateValue(newValue, forKey: "image")
+                        }
+                    }
+
+                    public var fragments: Fragments {
+                        get {
+                            return Fragments(unsafeResultMap: resultMap)
+                        }
+                        set {
+                            resultMap += newValue.resultMap
+                        }
+                    }
+
+                    public struct Fragments {
+                        public private(set) var resultMap: ResultMap
+
+                        public init(unsafeResultMap: ResultMap) {
+                            resultMap = unsafeResultMap
+                        }
+
+                        public var newsStoryCellNewsStory: NewsStoryCellNewsStory {
+                            get {
+                                return NewsStoryCellNewsStory(unsafeResultMap: resultMap)
+                            }
+                            set {
+                                resultMap += newValue.resultMap
+                            }
+                        }
+                    }
+                }
+
+                public struct Timeline: GraphQLSelectionSet {
+                    public static let possibleTypes: [String] = ["Timeline"]
+
+                    public static let selections: [GraphQLSelection] = [
+                        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                        GraphQLField("cases", type: .nonNull(.list(.nonNull(.object(Case.selections))))),
+                        GraphQLField("deaths", type: .nonNull(.list(.nonNull(.object(Death.selections))))),
+                        GraphQLField("recovered", type: .nonNull(.list(.nonNull(.object(Recovered.selections))))),
+                    ]
+
+                    public private(set) var resultMap: ResultMap
+
+                    public init(unsafeResultMap: ResultMap) {
+                        resultMap = unsafeResultMap
+                    }
+
+                    public init(cases: [Case], deaths: [Death], recovered: [Recovered]) {
+                        self.init(unsafeResultMap: ["__typename": "Timeline", "cases": cases.map { (value: Case) -> ResultMap in value.resultMap }, "deaths": deaths.map { (value: Death) -> ResultMap in value.resultMap }, "recovered": recovered.map { (value: Recovered) -> ResultMap in value.resultMap }])
+                    }
+
+                    public var __typename: String {
+                        get {
+                            return resultMap["__typename"]! as! String
+                        }
+                        set {
+                            resultMap.updateValue(newValue, forKey: "__typename")
+                        }
+                    }
+
+                    public var cases: [Case] {
+                        get {
+                            return (resultMap["cases"] as! [ResultMap]).map { (value: ResultMap) -> Case in Case(unsafeResultMap: value) }
+                        }
+                        set {
+                            resultMap.updateValue(newValue.map { (value: Case) -> ResultMap in value.resultMap }, forKey: "cases")
+                        }
+                    }
+
+                    public var deaths: [Death] {
+                        get {
+                            return (resultMap["deaths"] as! [ResultMap]).map { (value: ResultMap) -> Death in Death(unsafeResultMap: value) }
+                        }
+                        set {
+                            resultMap.updateValue(newValue.map { (value: Death) -> ResultMap in value.resultMap }, forKey: "deaths")
+                        }
+                    }
+
+                    public var recovered: [Recovered] {
+                        get {
+                            return (resultMap["recovered"] as! [ResultMap]).map { (value: ResultMap) -> Recovered in Recovered(unsafeResultMap: value) }
+                        }
+                        set {
+                            resultMap.updateValue(newValue.map { (value: Recovered) -> ResultMap in value.resultMap }, forKey: "recovered")
+                        }
+                    }
+
+                    public struct Case: GraphQLSelectionSet {
+                        public static let possibleTypes: [String] = ["DataPoint"]
+
+                        public static let selections: [GraphQLSelection] = [
+                            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                            GraphQLField("value", type: .nonNull(.scalar(Int.self))),
+                        ]
+
+                        public private(set) var resultMap: ResultMap
+
+                        public init(unsafeResultMap: ResultMap) {
+                            resultMap = unsafeResultMap
+                        }
+
+                        public init(value: Int) {
+                            self.init(unsafeResultMap: ["__typename": "DataPoint", "value": value])
+                        }
+
+                        public var __typename: String {
+                            get {
+                                return resultMap["__typename"]! as! String
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "__typename")
+                            }
+                        }
+
+                        public var value: Int {
+                            get {
+                                return resultMap["value"]! as! Int
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "value")
+                            }
+                        }
+                    }
+
+                    public struct Death: GraphQLSelectionSet {
+                        public static let possibleTypes: [String] = ["DataPoint"]
+
+                        public static let selections: [GraphQLSelection] = [
+                            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                            GraphQLField("value", type: .nonNull(.scalar(Int.self))),
+                        ]
+
+                        public private(set) var resultMap: ResultMap
+
+                        public init(unsafeResultMap: ResultMap) {
+                            resultMap = unsafeResultMap
+                        }
+
+                        public init(value: Int) {
+                            self.init(unsafeResultMap: ["__typename": "DataPoint", "value": value])
+                        }
+
+                        public var __typename: String {
+                            get {
+                                return resultMap["__typename"]! as! String
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "__typename")
+                            }
+                        }
+
+                        public var value: Int {
+                            get {
+                                return resultMap["value"]! as! Int
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "value")
+                            }
+                        }
+                    }
+
+                    public struct Recovered: GraphQLSelectionSet {
+                        public static let possibleTypes: [String] = ["DataPoint"]
+
+                        public static let selections: [GraphQLSelection] = [
+                            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                            GraphQLField("value", type: .nonNull(.scalar(Int.self))),
+                        ]
+
+                        public private(set) var resultMap: ResultMap
+
+                        public init(unsafeResultMap: ResultMap) {
+                            resultMap = unsafeResultMap
+                        }
+
+                        public init(value: Int) {
+                            self.init(unsafeResultMap: ["__typename": "DataPoint", "value": value])
+                        }
+
+                        public var __typename: String {
+                            get {
+                                return resultMap["__typename"]! as! String
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "__typename")
+                            }
+                        }
+
+                        public var value: Int {
+                            get {
+                                return resultMap["value"]! as! Int
+                            }
+                            set {
+                                resultMap.updateValue(newValue, forKey: "value")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public struct BasicCountryCellCountry: GraphQLFragment {
         /// The raw GraphQL definition of this fragment.
         public static let fragmentDefinition: String =
@@ -1678,6 +2222,114 @@ public enum ApolloCovid {
                 }
                 set {
                     resultMap.updateValue(newValue, forKey: "iso2")
+                }
+            }
+        }
+    }
+
+    public struct CountryMapPinCountry: GraphQLFragment {
+        /// The raw GraphQL definition of this fragment.
+        public static let fragmentDefinition: String =
+            """
+            fragment CountryMapPinCountry on Country {
+              __typename
+              cases
+              info {
+                __typename
+                latitude
+                longitude
+              }
+            }
+            """
+
+        public static let possibleTypes: [String] = ["Country"]
+
+        public static let selections: [GraphQLSelection] = [
+            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+            GraphQLField("cases", type: .nonNull(.scalar(Int.self))),
+            GraphQLField("info", type: .nonNull(.object(Info.selections))),
+        ]
+
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+            resultMap = unsafeResultMap
+        }
+
+        public init(cases: Int, info: Info) {
+            self.init(unsafeResultMap: ["__typename": "Country", "cases": cases, "info": info.resultMap])
+        }
+
+        public var __typename: String {
+            get {
+                return resultMap["__typename"]! as! String
+            }
+            set {
+                resultMap.updateValue(newValue, forKey: "__typename")
+            }
+        }
+
+        public var cases: Int {
+            get {
+                return resultMap["cases"]! as! Int
+            }
+            set {
+                resultMap.updateValue(newValue, forKey: "cases")
+            }
+        }
+
+        public var info: Info {
+            get {
+                return Info(unsafeResultMap: resultMap["info"]! as! ResultMap)
+            }
+            set {
+                resultMap.updateValue(newValue.resultMap, forKey: "info")
+            }
+        }
+
+        public struct Info: GraphQLSelectionSet {
+            public static let possibleTypes: [String] = ["Info"]
+
+            public static let selections: [GraphQLSelection] = [
+                GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+                GraphQLField("latitude", type: .scalar(Double.self)),
+                GraphQLField("longitude", type: .scalar(Double.self)),
+            ]
+
+            public private(set) var resultMap: ResultMap
+
+            public init(unsafeResultMap: ResultMap) {
+                resultMap = unsafeResultMap
+            }
+
+            public init(latitude: Double? = nil, longitude: Double? = nil) {
+                self.init(unsafeResultMap: ["__typename": "Info", "latitude": latitude, "longitude": longitude])
+            }
+
+            public var __typename: String {
+                get {
+                    return resultMap["__typename"]! as! String
+                }
+                set {
+                    resultMap.updateValue(newValue, forKey: "__typename")
+                }
+            }
+
+            public var latitude: Double? {
+                get {
+                    return resultMap["latitude"] as? Double
+                }
+                set {
+                    resultMap.updateValue(newValue, forKey: "latitude")
+                }
+            }
+
+            public var longitude: Double? {
+                get {
+                    return resultMap["longitude"] as? Double
+                }
+                set {
+                    resultMap.updateValue(newValue, forKey: "longitude")
                 }
             }
         }
@@ -1996,6 +2648,7 @@ public enum ApolloCovid {
                 name
               }
               title
+              url
             }
             """
 
@@ -2007,6 +2660,7 @@ public enum ApolloCovid {
             GraphQLField("overview", type: .scalar(String.self)),
             GraphQLField("source", type: .nonNull(.object(Source.selections))),
             GraphQLField("title", type: .nonNull(.scalar(String.self))),
+            GraphQLField("url", type: .nonNull(.scalar(String.self))),
         ]
 
         public private(set) var resultMap: ResultMap
@@ -2015,8 +2669,8 @@ public enum ApolloCovid {
             resultMap = unsafeResultMap
         }
 
-        public init(image: String? = nil, overview: String? = nil, source: Source, title: String) {
-            self.init(unsafeResultMap: ["__typename": "NewsStory", "image": image, "overview": overview, "source": source.resultMap, "title": title])
+        public init(image: String? = nil, overview: String? = nil, source: Source, title: String, url: String) {
+            self.init(unsafeResultMap: ["__typename": "NewsStory", "image": image, "overview": overview, "source": source.resultMap, "title": title, "url": url])
         }
 
         public var __typename: String {
@@ -2061,6 +2715,15 @@ public enum ApolloCovid {
             }
             set {
                 resultMap.updateValue(newValue, forKey: "title")
+            }
+        }
+
+        public var url: String {
+            get {
+                return resultMap["url"]! as! String
+            }
+            set {
+                resultMap.updateValue(newValue, forKey: "url")
             }
         }
 
