@@ -6,40 +6,34 @@ import URLImage
 import SwiftUICharts
 
 struct CountryDetailView: View {
-    @GraphQL(Covid.country._nonNull().name)
+    @GraphQL(Covid.country.name)
     var name: String
 
-    @GraphQL(Covid.country._nonNull().info.iso2)
+    @GraphQL(Covid.country.info.iso2)
     var countryCode: String?
 
-    @GraphQL(Covid.country._nonNull().cases)
-    var cases: Int
+    @GraphQL(Covid.country.affected)
+    var affected: StatsView.Affected
 
-    @GraphQL(Covid.country._nonNull().deaths)
-    var deaths: Int
-
-    @GraphQL(Covid.country._nonNull().recovered)
-    var recovered: Int
-
-    @GraphQL(Covid.country._nonNull().todayCases)
+    @GraphQL(Covid.country.todayCases)
     var casesToday: Int
 
-    @GraphQL(Covid.country._nonNull().todayDeaths)
+    @GraphQL(Covid.country.todayDeaths)
     var deathsToday: Int
 
-    @GraphQL(Covid.country._nonNull().timeline.cases._forEach(\.value))
+    @GraphQL(Covid.country.timeline.cases._forEach(\.value))
     var casesOverTime: [Int]
 
-    @GraphQL(Covid.country._nonNull().timeline.deaths._forEach(\.value))
+    @GraphQL(Covid.country.timeline.deaths._forEach(\.value))
     var deathsOverTime: [Int]
 
-    @GraphQL(Covid.country._nonNull().timeline.recovered._forEach(\.value))
+    @GraphQL(Covid.country.timeline.recovered._forEach(\.value))
     var recoveredOverTime: [Int]
 
-    @GraphQL(Covid.country._nonNull().news._forEach(\.image))
+    @GraphQL(Covid.country.news._forEach(\.image))
     var images: [String?]
 
-    @GraphQL(Covid.country._nonNull().news)
+    @GraphQL(Covid.country.news)
     var news: [NewsStoryCell.NewsStory]
 
     var title: String {
@@ -102,32 +96,9 @@ struct CountryDetailView: View {
                             .padding(.top, 16)
 
                         NeumporphicCard {
-                            HStack {
-                                VStack {
-                                    Text("Cases").font(.headline).fontWeight(.bold).foregroundColor(.primary)
-                                    Text(cases.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
-                                }
-
-                                Spacer()
-                                Divider().padding(.vertical, 8)
-                                Spacer()
-
-                                VStack {
-                                    Text("Deaths").font(.headline).fontWeight(.bold).foregroundColor(.primary)
-                                    Text(deaths.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
-                                }
-
-                                Spacer()
-                                Divider().padding(.vertical, 8)
-                                Spacer()
-
-                                VStack {
-                                    Text("Recovered").font(.headline).fontWeight(.bold).foregroundColor(.primary)
-                                    Text(recovered.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
-                                }
-                            }
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 24)
+                            StatsView(affected: affected)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 24)
                         }
                         .padding(.horizontal, 16)
                     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		066DB83D244E0346006B692B /* OverallStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066DB83C244E0346006B692B /* OverallStatsView.swift */; };
 		06E4DF492434A5FE00092990 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF482434A5FE00092990 /* AppDelegate.swift */; };
 		06E4DF4B2434A5FE00092990 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF4A2434A5FE00092990 /* SceneDelegate.swift */; };
 		06E4DF4D2434A5FE00092990 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF4C2434A5FE00092990 /* ContentView.swift */; };
@@ -35,6 +36,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		066DB83C244E0346006B692B /* OverallStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallStatsView.swift; sourceTree = "<group>"; };
 		06E4DF452434A5FE00092990 /* CovidUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CovidUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		06E4DF482434A5FE00092990 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		06E4DF4A2434A5FE00092990 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				06E4DF4C2434A5FE00092990 /* ContentView.swift */,
 				06E4DF7C24375BDE00092990 /* MapView.swift */,
 				06E4DF802437A41700092990 /* CountryDetailView.swift */,
+				066DB83C244E0346006B692B /* OverallStatsView.swift */,
 				06E4DF7A24375ADD00092990 /* CountryMapPin.swift */,
 				06E4DF712435099200092990 /* Background.swift */,
 				06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */,
@@ -221,7 +224,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\ngraphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
+			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\n#graphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -238,6 +241,7 @@
 				06E4DF682434A8E600092990 /* emoji.swift in Sources */,
 				06E4DF492434A5FE00092990 /* AppDelegate.swift in Sources */,
 				06E4DF6E2434DD2F00092990 /* Neumorphic+init.swift in Sources */,
+				066DB83D244E0346006B692B /* OverallStatsView.swift in Sources */,
 				06E4DF4B2434A5FE00092990 /* SceneDelegate.swift in Sources */,
 				06E4DF7D24375BDE00092990 /* MapView.swift in Sources */,
 				06E4DF4D2434A5FE00092990 /* ContentView.swift in Sources */,
