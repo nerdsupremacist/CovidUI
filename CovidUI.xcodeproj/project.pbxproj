@@ -224,7 +224,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\n#graphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
+			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\ngraphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -398,6 +398,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "GRAPHAELLO_COVID_UI__TARGET $(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -419,6 +420,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) GRAPHAELLO_COVID_UI__TARGET";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -484,8 +486,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.32.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
