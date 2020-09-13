@@ -10,7 +10,7 @@ struct ContentView: View {
     var currentCountry: FeaturedCountryCell.Country?
 
     @GraphQL(Covid.myCountry.name)
-    var currentCountryName: String?
+    var currentCountryName
 
     @GraphQL(Covid.myCountry.news)
     var currentCountryNews: [NewsStoryCell.NewsStory]?
@@ -18,23 +18,23 @@ struct ContentView: View {
     @GraphQL(Covid.world)
     var world: CurrentStateCell.World
 
-    @GraphQL(Covid.world.timeline.cases._forEach(\.value))
-    var cases: [Int]
+    @GraphQL(Covid.world.timeline.cases.graph._forEach(\.value))
+    var cases
 
-    @GraphQL(Covid.world.timeline.deaths._forEach(\.value))
-    var deaths: [Int]
+    @GraphQL(Covid.world.timeline.deaths.graph._forEach(\.value))
+    var deaths
 
-    @GraphQL(Covid.world.timeline.recovered._forEach(\.value))
-    var recovered: [Int]
+    @GraphQL(Covid.world.timeline.recovered.graph._forEach(\.value))
+    var recovered
 
     @GraphQL(Covid.world.news)
     var news: [NewsStoryCell.NewsStory]
 
     @GraphQL(Covid.countries)
-    var countries: [BasicCountryCell.Country]
+    var countries: Paging<BasicCountryCell.Country>
 
-    @GraphQL(Covid.countries)
-    var pins: [CountryMapPin.Country]
+    @GraphQL(Covid.countries.edges._forEach(\.node)._compactMap()._withDefault([]))
+    var pins: [CountryMapPin]
 
     var body: some View {
         NavigationView {
@@ -131,7 +131,7 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 16)
 
-                            MapView(pins: pins.map(CountryMapPin.init)).frame(height: 400)
+                            MapView(pins: pins).frame(height: 400)
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
@@ -141,7 +141,7 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 16)
 
-                            ForEach(countries, id: \.name) { country in
+                            ForEach(countries.values, id: \.name) { country in
                                 VStack {
                                     Divider()
                                     BasicCountryCell(api: self.api, country: country)

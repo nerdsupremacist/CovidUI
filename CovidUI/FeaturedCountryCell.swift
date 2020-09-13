@@ -8,19 +8,19 @@ struct FeaturedCountryCell: View {
     let api: Covid
 
     @GraphQL(Covid.Country.name)
-    var name: String
+    var name
 
     @GraphQL(Covid.Country.info.iso2)
-    var countryCode: String?
+    var countryCode
 
     @GraphQL(Covid.Country.affected)
     var affected: StatsView.Affected
 
     @GraphQL(Covid.Country.todayDeaths)
-    var todayDeaths: Int
+    var todayDeaths
 
-    @GraphQL(Covid.Country.timeline.cases._forEach(\.value))
-    var casesOverTime: [Int]
+    @GraphQL(Covid.Country.timeline.cases.graph._forEach(\.value))
+    var casesOverTime
 
     var body: some View {
         NeumporphicCard {

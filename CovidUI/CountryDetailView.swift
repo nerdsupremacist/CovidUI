@@ -7,31 +7,31 @@ import SwiftUICharts
 
 struct CountryDetailView: View {
     @GraphQL(Covid.country.name)
-    var name: String
+    var name
 
     @GraphQL(Covid.country.info.iso2)
-    var countryCode: String?
+    var countryCode
 
     @GraphQL(Covid.country.affected)
     var affected: StatsView.Affected
 
     @GraphQL(Covid.country.todayCases)
-    var casesToday: Int
+    var casesToday
 
     @GraphQL(Covid.country.todayDeaths)
-    var deathsToday: Int
+    var deathsToday
 
-    @GraphQL(Covid.country.timeline.cases._forEach(\.value))
-    var casesOverTime: [Int]
+    @GraphQL(Covid.country.timeline.cases.graph._forEach(\.value))
+    var casesOverTime
 
-    @GraphQL(Covid.country.timeline.deaths._forEach(\.value))
-    var deathsOverTime: [Int]
+    @GraphQL(Covid.country.timeline.deaths.graph._forEach(\.value))
+    var deathsOverTime
 
-    @GraphQL(Covid.country.timeline.recovered._forEach(\.value))
-    var recoveredOverTime: [Int]
+    @GraphQL(Covid.country.timeline.recovered.graph._forEach(\.value))
+    var recoveredOverTime
 
     @GraphQL(Covid.country.news._forEach(\.image))
-    var images: [String?]
+    var images
 
     @GraphQL(Covid.country.news)
     var news: [NewsStoryCell.NewsStory]

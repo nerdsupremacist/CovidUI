@@ -6,19 +6,19 @@ import URLImage
 
 struct NewsStoryCell: View {
     @GraphQL(Covid.NewsStory.source.name)
-    var source: String
+    var source
 
     @GraphQL(Covid.NewsStory.title)
-    var title: String
+    var title
 
     @GraphQL(Covid.NewsStory.overview)
-    var overview: String?
+    var overview
 
     @GraphQL(Covid.NewsStory.image)
-    var image: String?
+    var image
 
     @GraphQL(Covid.NewsStory.url)
-    var url: String
+    var url
 
     var body: some View {
         Button(action: { UIApplication.shared.open(URL(string: self.url)!) }) {

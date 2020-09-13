@@ -5,13 +5,13 @@ import MapKit
 
 struct CountryMapPin {
     @GraphQL(Covid.Country.cases)
-    var cases: Int
+    var cases
 
     @GraphQL(Covid.Country.info.latitude)
-    var latitude: Double?
+    var latitude
 
     @GraphQL(Covid.Country.info.longitude)
-    var longitude: Double?
+    var longitude
 
     func overlay() -> MKOverlay? {
         return coordinate().map { MKCircle(center: $0, radius: min(max(Double(cases) * 5, 500), 5_000_000)) }

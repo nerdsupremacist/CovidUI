@@ -224,7 +224,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\ngraphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
+			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\n#graphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

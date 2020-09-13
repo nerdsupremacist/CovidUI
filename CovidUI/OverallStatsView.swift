@@ -11,13 +11,13 @@ import SwiftUI
 
 struct StatsView: View {
     @GraphQL(Covid.Affected.cases)
-    var cases: Int
+    var cases
 
     @GraphQL(Covid.Affected.deaths)
-    var deaths: Int
+    var deaths
 
     @GraphQL(Covid.Affected.recovered)
-    var recovered: Int
+    var recovered
 
     var body: some View {
         HStack {
