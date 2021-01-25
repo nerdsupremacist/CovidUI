@@ -16,8 +16,8 @@ struct MapView: UIViewRepresentable {
             let circle = MKPolygonRenderer(overlay: overlay)
 
             if let overlay = overlay as? Polygon.MapKitPolygon {
-                let alpha = min(max(CGFloat(overlay.active) / 1_000_000, 0), 1)
-                circle.strokeColor = UIColor(red: 255, green: 0, blue: 0, alpha: alpha)
+                let alpha = min(max(CGFloat(overlay.active) / 1_000_000, 0), 0.9)
+                circle.strokeColor = UIColor(red: 255, green: 0, blue: 0, alpha: 1)
                 circle.fillColor = UIColor(red: 255, green: 0, blue: 0, alpha: alpha)
                 circle.lineWidth = 1
             }

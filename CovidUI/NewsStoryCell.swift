@@ -48,7 +48,8 @@ struct NewsStoryCell: View {
                                     Text(self.source).font(.callout).fontWeight(.light).foregroundColor(.secondary)
                                     Text(self.title).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                                     self.overview.map { Text($0).font(.body).fontWeight(.regular).lineLimit(3).foregroundColor(.secondary) }
-                                }.padding(.all, 16)
+                                }
+                                .padding(.all, 16)
                             }
                         }
                     }

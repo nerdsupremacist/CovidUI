@@ -895,10 +895,10 @@ extension GraphQL {
 
         static var continents: FragmentPath<[Covid.IContinent]> { .init() }
 
-        static func countries(before _: GraphQLArgument<String?> = .argument,
+        static func countries(after _: GraphQLArgument<String?> = .argument,
+                              before _: GraphQLArgument<String?> = .argument,
                               first _: GraphQLArgument<Int?> = .argument,
-                              last _: GraphQLArgument<Int?> = .argument,
-                              after _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+                              last _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.CountryConnection> {
             return .init()
         }
 
@@ -911,9 +911,9 @@ extension GraphQL {
         static var country: FragmentPath<Covid.Country> { .init() }
 
         static func historicalData(after _: GraphQLArgument<String?> = .argument,
+                                   before _: GraphQLArgument<String?> = .argument,
                                    first _: GraphQLArgument<Int?> = .argument,
-                                   last _: GraphQLArgument<Int?> = .argument,
-                                   before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.HistoricalDataConnection> {
+                                   last _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.HistoricalDataConnection> {
             return .init()
         }
 
@@ -985,17 +985,17 @@ extension GraphQL {
             typealias Path<V> = GraphQLPath<ContinentIdentifier, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<ContinentIdentifier, V>
 
+            case northAmerica = "NorthAmerica"
+
+            case southAmerica = "SouthAmerica"
+
             case europe = "Europe"
+
+            case asia = "Asia"
 
             case australiaOceania = "AustraliaOceania"
 
             case africa = "Africa"
-
-            case asia = "Asia"
-
-            case southAmerica = "SouthAmerica"
-
-            case northAmerica = "NorthAmerica"
 
             static var _fragment: FragmentPath<ContinentIdentifier> { .init() }
         }
@@ -1147,10 +1147,10 @@ extension GraphQL {
             typealias Path<V> = GraphQLPath<DataPointsCollection, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<DataPointsCollection, V>
 
-            static func connection(last _: GraphQLArgument<Int?> = .argument,
-                                   after _: GraphQLArgument<String?> = .argument,
-                                   first _: GraphQLArgument<Int?> = .argument,
-                                   before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
+            static func connection(after _: GraphQLArgument<String?> = .argument,
+                                   before _: GraphQLArgument<String?> = .argument,
+                                   last _: GraphQLArgument<Int?> = .argument,
+                                   first _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
                 return .init()
             }
 
@@ -1208,10 +1208,10 @@ extension GraphQL {
 
             static var cases: Path<Int> { .init() }
 
-            static func countries(after _: GraphQLArgument<String?> = .argument,
+            static func countries(before _: GraphQLArgument<String?> = .argument,
                                   first _: GraphQLArgument<Int?> = .argument,
                                   last _: GraphQLArgument<Int?> = .argument,
-                                  before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+                                  after _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
                 return .init()
             }
 
@@ -1869,10 +1869,10 @@ extension GraphQL {
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPointsCollection {
-        func connection(last _: GraphQLArgument<Int?> = .argument,
-                        after _: GraphQLArgument<String?> = .argument,
-                        first _: GraphQLArgument<Int?> = .argument,
-                        before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
+        func connection(after _: GraphQLArgument<String?> = .argument,
+                        before _: GraphQLArgument<String?> = .argument,
+                        last _: GraphQLArgument<Int?> = .argument,
+                        first _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
             return .init()
         }
 
@@ -1886,10 +1886,10 @@ extension GraphQL {
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPointsCollection? {
-        func connection(last _: GraphQLArgument<Int?> = .argument,
-                        after _: GraphQLArgument<String?> = .argument,
-                        first _: GraphQLArgument<Int?> = .argument,
-                        before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection?> {
+        func connection(after _: GraphQLArgument<String?> = .argument,
+                        before _: GraphQLArgument<String?> = .argument,
+                        last _: GraphQLArgument<Int?> = .argument,
+                        first _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.DataPointConnection?> {
             return .init()
         }
 
@@ -1967,10 +1967,10 @@ extension GraphQL {
 
         var cases: Path<Int> { .init() }
 
-        func countries(after _: GraphQLArgument<String?> = .argument,
+        func countries(before _: GraphQLArgument<String?> = .argument,
                        first _: GraphQLArgument<Int?> = .argument,
                        last _: GraphQLArgument<Int?> = .argument,
-                       before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+                       after _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
             return .init()
         }
 
@@ -2006,10 +2006,10 @@ extension GraphQL {
 
         var cases: Path<Int?> { .init() }
 
-        func countries(after _: GraphQLArgument<String?> = .argument,
+        func countries(before _: GraphQLArgument<String?> = .argument,
                        first _: GraphQLArgument<Int?> = .argument,
                        last _: GraphQLArgument<Int?> = .argument,
-                       before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection?> {
+                       after _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection?> {
             return .init()
         }
 
@@ -2509,7 +2509,7 @@ extension GraphQL {
     }
 
     extension ApolloCovid.BasicCountryCellCountry {
-        private static let placeholderMap: ResultMap = ["__typename": "Country", "cases": 42, "identifier": Covid.CountryIdentifier(rawValue: "Haiti")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__"]
+        private static let placeholderMap: ResultMap = ["__typename": "Country", "cases": 42, "identifier": Covid.CountryIdentifier(rawValue: "SKorea")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__"]
 
         static let placeholder = ApolloCovid.BasicCountryCellCountry(
             unsafeResultMap: ApolloCovid.BasicCountryCellCountry.placeholderMap
@@ -3006,29 +3006,29 @@ extension GraphQL {
     }
 
     extension Covid {
-        func contentView<Loading: View, Error: View>(before: String? = nil,
+        func contentView<Loading: View, Error: View>(after: String? = nil,
+                                                     before: String? = nil,
                                                      first: Int? = nil,
                                                      last: Int? = nil,
-                                                     after: String? = nil,
                                                      numberOfPoints: Int = 30,
                                                      
                                                      @ViewBuilder loading: () -> Loading,
                                                      @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(before: before,
+                                 query: ApolloCovid.ContentViewQuery(after: after,
+                                                                     before: before,
                                                                      first: first,
                                                                      last: last,
-                                                                     after: after,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: error) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(after: _cursor,
+                                                                                                                                       before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       last: last,
-                                                                                                                                       after: _cursor)) { result in
+                                                                                                                                       last: last)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -3037,28 +3037,28 @@ extension GraphQL {
             }
         }
 
-        func contentView<Loading: View>(before: String? = nil,
+        func contentView<Loading: View>(after: String? = nil,
+                                        before: String? = nil,
                                         first: Int? = nil,
                                         last: Int? = nil,
-                                        after: String? = nil,
                                         numberOfPoints: Int = 30,
                                         
                                         @ViewBuilder loading: () -> Loading) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(before: before,
+                                 query: ApolloCovid.ContentViewQuery(after: after,
+                                                                     before: before,
                                                                      first: first,
                                                                      last: last,
-                                                                     after: after,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: { BasicErrorView(error: $0) }) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(after: _cursor,
+                                                                                                                                       before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       last: last,
-                                                                                                                                       after: _cursor)) { result in
+                                                                                                                                       last: last)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -3067,18 +3067,18 @@ extension GraphQL {
             }
         }
 
-        func contentView<Error: View>(before: String? = nil,
+        func contentView<Error: View>(after: String? = nil,
+                                      before: String? = nil,
                                       first: Int? = nil,
                                       last: Int? = nil,
-                                      after: String? = nil,
                                       numberOfPoints: Int = 30,
                                       
                                       @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(before: before,
+                                 query: ApolloCovid.ContentViewQuery(after: after,
+                                                                     before: before,
                                                                      first: first,
                                                                      last: last,
-                                                                     after: after,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: ContentView.placeholderView(api: self,
                                                                       countries: ApolloCovid.ContentViewQuery.Data.placeholder.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _, _, _ in
@@ -3088,10 +3088,10 @@ extension GraphQL {
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(after: _cursor,
+                                                                                                                                       before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       last: last,
-                                                                                                                                       after: _cursor)) { result in
+                                                                                                                                       last: last)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -3100,16 +3100,16 @@ extension GraphQL {
             }
         }
 
-        func contentView(before: String? = nil,
+        func contentView(after: String? = nil,
+                         before: String? = nil,
                          first: Int? = nil,
                          last: Int? = nil,
-                         after: String? = nil,
                          numberOfPoints: Int = 30) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(before: before,
+                                 query: ApolloCovid.ContentViewQuery(after: after,
+                                                                     before: before,
                                                                      first: first,
                                                                      last: last,
-                                                                     after: after,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: ContentView.placeholderView(api: self,
                                                                       countries: ApolloCovid.ContentViewQuery.Data.placeholder.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _, _, _ in
@@ -3119,10 +3119,10 @@ extension GraphQL {
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(after: _cursor,
+                                                                                                                                       before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       last: last,
-                                                                                                                                       after: _cursor)) { result in
+                                                                                                                                       last: last)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -3133,7 +3133,7 @@ extension GraphQL {
     }
 
     extension ApolloCovid.ContentViewQuery.Data {
-        private static let placeholderMap: ResultMap = ["countries": ["__typename": "CountryConnection", "edges": Array(repeating: ["__typename": "CountryEdge", "node": ["__typename": "Country", "active": 42, "cases": 42, "geometry": ["__typename": "GeographicalGeometry"], "identifier": Covid.CountryIdentifier(rawValue: "Haiti")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__", "latitude": 42.0, "longitude": 42.0], "name": "__GRAPHAELLO_PLACEHOLDER__"]], count: 5) as [ResultMap], "pageInfo": ["__typename": "PageInfo", "endCursor": "__GRAPHAELLO_PLACEHOLDER__", "hasNextPage": true]], "myCountry": ["__typename": "Country", "cases": 42, "deaths": 42, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__", "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]], "todayDeaths": 42], "world": ["__typename": "World", "cases": 42, "deaths": 42, "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]]]]
+        private static let placeholderMap: ResultMap = ["countries": ["__typename": "CountryConnection", "edges": Array(repeating: ["__typename": "CountryEdge", "node": ["__typename": "Country", "active": 42, "cases": 42, "geometry": ["__typename": "GeographicalGeometry"], "identifier": Covid.CountryIdentifier(rawValue: "SKorea")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__", "latitude": 42.0, "longitude": 42.0], "name": "__GRAPHAELLO_PLACEHOLDER__"]], count: 5) as [ResultMap], "pageInfo": ["__typename": "PageInfo", "endCursor": "__GRAPHAELLO_PLACEHOLDER__", "hasNextPage": true]], "myCountry": ["__typename": "Country", "cases": 42, "deaths": 42, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__", "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]], "todayDeaths": 42], "world": ["__typename": "World", "cases": 42, "deaths": 42, "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]]]]
 
         static let placeholder = ApolloCovid.ContentViewQuery.Data(
             unsafeResultMap: ApolloCovid.ContentViewQuery.Data.placeholderMap
@@ -3188,907 +3188,907 @@ import Foundation
 public enum ApolloCovid {
   public enum CountryIdentifier: RawRepresentable, Equatable, Hashable, CaseIterable, Apollo.JSONDecodable, Apollo.JSONEncodable {
     public typealias RawValue = String
-    case haiti
-    case solomonIslands
-    case libyanArabJamahiriya
-    case centralAfricanRepublic
-    case wallisAndFutuna
-    case egypt
-    case frenchPolynesia
-    case equatorialGuinea
-    case curacao
-    case samoa
-    case honduras
-    case mozambique
-    case msZaandam
-    case slovenia
-    case bhutan
-    case morocco
-    case bulgaria
-    case sanMarino
-    case guinea
-    case iran
-    case burundi
-    case lesotho
-    case mauritius
-    case ireland
-    case papuaNewGuinea
-    case swaziland
-    case saintKittsAndNevis
-    case seychelles
-    case japan
-    case vanuatu
-    case uk
-    case thailand
-    case nepal
-    case sriLanka
-    case barbados
-    case syrianArabRepublic
-    case nicaragua
-    case chile
-    case australia
-    case andorra
-    case bangladesh
-    case saoTomeAndPrincipe
-    case estonia
-    case uae
-    case norway
-    case philippines
-    case macao
-    case fiji
-    case russia
-    case panama
-    case myanmar
-    case kyrgyzstan
-    case singapore
-    case malaysia
-    case elSalvador
-    case iraq
-    case anguilla
-    case newCaledonia
-    case frenchGuiana
-    case niger
-    case dominica
-    case belize
-    case georgia
-    case bahamas
-    case sweden
-    case liberia
-    case ecuador
-    case indonesia
-    case saintPierreMiquelon
-    case brazil
-    case tunisia
-    case ghana
-    case india
-    case gambia
-    case qatar
-    case trinidadAndTobago
-    case djibouti
-    case turkey
-    case liechtenstein
-    case grenada
-    case britishVirginIslands
-    case comoros
-    case cameroon
-    case azerbaijan
-    case southSudan
-    case kazakhstan
-    case falklandIslandsMalvinas
-    case belarus
-    case greenland
-    case botswana
-    case israel
-    case malawi
-    case micronesia
-    case spain
-    case hungary
-    case uzbekistan
-    case guineaBissau
-    case germany
-    case guyana
-    case bolivia
-    case gabon
-    case finland
-    case canada
-    case afghanistan
-    case saintMartin
-    case sierraLeone
-    case slovakia
-    case chad
-    case turksAndCaicosIslands
-    case argentina
-    case gibraltar
-    case latvia
-    case netherlands
-    case serbia
-    case caribbeanNetherlands
-    case coteDIvoire
-    case somalia
-    case luxembourg
-    case holySeeVaticanCityState
-    case pakistan
-    case cuba
-    case vietnam
-    case bahrain
-    case greece
-    case antiguaAndBarbuda
-    case paraguay
-    case martinique
-    case jordan
-    case faroeIslands
-    case montserrat
-    case czechia
-    case brunei
-    case kuwait
-    case zambia
-    case montenegro
-    case sudan
-    case suriname
-    case isleOfMan
-    case switzerland
-    case cambodia
-    case france
-    case angola
     case sKorea
-    case benin
-    case portugal
-    case oman
-    case denmark
-    case palestine
-    case dominicanRepublic
-    case uganda
-    case bosnia
-    case sintMaarten
-    case romania
-    case colombia
-    case yemen
-    case monaco
-    case guatemala
-    case channelIslands
-    case mayotte
-    case burkinaFaso
-    case aruba
-    case taiwan
-    case zimbabwe
-    case poland
-    case westernSahara
-    case algeria
-    case nigeria
-    case malta
-    case timorLeste
-    case drc
-    case lithuania
-    case bermuda
-    case cyprus
-    case jamaica
-    case mauritania
-    case senegal
-    case caboVerde
-    case tajikistan
-    case usa
-    case moldova
-    case reunion
-    case namibia
-    case eritrea
-    case saintVincentAndTheGrenadines
-    case italy
-    case congo
-    case china
-    case southAfrica
-    case iceland
-    case lebanon
-    case kenya
-    case uruguay
     case mongolia
-    case tanzania
-    case albania
-    case austria
-    case macedonia
-    case guadeloupe
-    case costaRica
+    case syrianArabRepublic
+    case msZaandam
+    case denmark
+    case bosnia
+    case honduras
+    case vanuatu
+    case monaco
+    case romania
+    case southSudan
+    case palestine
+    case comoros
+    case zimbabwe
+    case newCaledonia
+    case caymanIslands
+    case australia
+    case azerbaijan
+    case centralAfricanRepublic
+    case fiji
+    case nepal
+    case tunisia
+    case hongKong
+    case haiti
+    case bahamas
+    case timorLeste
     case newZealand
-    case mexico
-    case stBarth
-    case saintLucia
-    case rwanda
-    case venezuela
-    case croatia
-    case saudiArabia
-    case marshallIslands
-    case diamondPrincess
-    case peru
-    case ukraine
+    case ireland
+    case brazil
+    case antiguaAndBarbuda
+    case somalia
+    case britishVirginIslands
+    case jordan
+    case barbados
+    case montserrat
+    case vietnam
+    case uganda
+    case andorra
+    case tajikistan
     case maldives
-    case madagascar
+    case panama
+    case morocco
+    case faroeIslands
+    case isleOfMan
+    case egypt
+    case belize
+    case benin
+    case lebanon
+    case poland
+    case gabon
+    case kuwait
+    case stBarth
+    case bolivia
+    case diamondPrincess
+    case china
+    case algeria
+    case turkey
+    case finland
+    case ghana
+    case micronesia
+    case gambia
+    case moldova
+    case suriname
+    case oman
+    case bulgaria
+    case gibraltar
+    case greenland
+    case bermuda
+    case indonesia
+    case drc
+    case grenada
+    case costaRica
+    case kenya
+    case mozambique
+    case singapore
+    case ukraine
+    case argentina
+    case holySeeVaticanCityState
+    case afghanistan
+    case saudiArabia
+    case macedonia
+    case libyanArabJamahiriya
+    case spain
+    case malawi
+    case saintKittsAndNevis
+    case italy
+    case namibia
+    case uzbekistan
+    case ethiopia
+    case paraguay
+    case samoa
+    case qatar
+    case lesotho
+    case dominica
+    case falklandIslandsMalvinas
+    case guinea
+    case cambodia
+    case india
+    case georgia
+    case france
+    case latvia
+    case mauritania
+    case mauritius
+    case jamaica
+    case uk
+    case nigeria
+    case uruguay
+    case dominicanRepublic
+    case israel
+    case trinidadAndTobago
+    case japan
+    case guyana
+    case angola
+    case turksAndCaicosIslands
+    case djibouti
+    case saoTomeAndPrincipe
+    case belarus
+    case anguilla
+    case lithuania
+    case chad
+    case liechtenstein
+    case seychelles
+    case cameroon
+    case frenchPolynesia
+    case switzerland
+    case iraq
+    case eritrea
+    case saintPierreMiquelon
+    case serbia
+    case aruba
+    case portugal
     case laoPeopleSDemocraticRepublic
     case belgium
-    case caymanIslands
-    case ethiopia
-    case mali
-    case armenia
-    case hongKong
+    case estonia
+    case marshallIslands
+    case cuba
+    case montenegro
+    case westernSahara
+    case bahrain
+    case elSalvador
+    case mayotte
+    case czechia
+    case malaysia
+    case wallisAndFutuna
+    case iran
+    case slovenia
+    case croatia
+    case sudan
+    case slovakia
+    case caribbeanNetherlands
+    case nicaragua
+    case sanMarino
+    case sweden
+    case madagascar
+    case uae
+    case norway
+    case cyprus
+    case colombia
+    case saintLucia
+    case sriLanka
+    case curacao
+    case reunion
+    case bangladesh
+    case saintVincentAndTheGrenadines
+    case chile
+    case solomonIslands
+    case netherlands
+    case myanmar
+    case russia
+    case guadeloupe
+    case malta
+    case pakistan
+    case caboVerde
+    case thailand
+    case papuaNewGuinea
+    case canada
+    case macao
+    case senegal
+    case germany
+    case guatemala
+    case burkinaFaso
+    case mexico
     case togo
+    case armenia
+    case kyrgyzstan
+    case brunei
+    case philippines
+    case iceland
+    case venezuela
+    case frenchGuiana
+    case peru
+    case taiwan
+    case saintMartin
+    case congo
+    case tanzania
+    case zambia
+    case albania
+    case guineaBissau
+    case channelIslands
+    case burundi
+    case mali
+    case bhutan
+    case yemen
+    case sintMaarten
+    case luxembourg
+    case usa
+    case rwanda
+    case southAfrica
+    case greece
+    case hungary
+    case botswana
+    case swaziland
+    case ecuador
+    case liberia
+    case austria
+    case equatorialGuinea
+    case martinique
+    case kazakhstan
+    case niger
+    case sierraLeone
+    case coteDIvoire
     /// Auto generated constant for unknown enum values
     case __unknown(RawValue)
 
     public init?(rawValue: RawValue) {
       switch rawValue {
-        case "Haiti": self = .haiti
-        case "SolomonIslands": self = .solomonIslands
-        case "LibyanArabJamahiriya": self = .libyanArabJamahiriya
-        case "CentralAfricanRepublic": self = .centralAfricanRepublic
-        case "WallisAndFutuna": self = .wallisAndFutuna
-        case "Egypt": self = .egypt
-        case "FrenchPolynesia": self = .frenchPolynesia
-        case "EquatorialGuinea": self = .equatorialGuinea
-        case "Curacao": self = .curacao
-        case "Samoa": self = .samoa
-        case "Honduras": self = .honduras
-        case "Mozambique": self = .mozambique
-        case "MsZaandam": self = .msZaandam
-        case "Slovenia": self = .slovenia
-        case "Bhutan": self = .bhutan
-        case "Morocco": self = .morocco
-        case "Bulgaria": self = .bulgaria
-        case "SanMarino": self = .sanMarino
-        case "Guinea": self = .guinea
-        case "Iran": self = .iran
-        case "Burundi": self = .burundi
-        case "Lesotho": self = .lesotho
-        case "Mauritius": self = .mauritius
-        case "Ireland": self = .ireland
-        case "PapuaNewGuinea": self = .papuaNewGuinea
-        case "Swaziland": self = .swaziland
-        case "SaintKittsAndNevis": self = .saintKittsAndNevis
-        case "Seychelles": self = .seychelles
-        case "Japan": self = .japan
-        case "Vanuatu": self = .vanuatu
-        case "Uk": self = .uk
-        case "Thailand": self = .thailand
-        case "Nepal": self = .nepal
-        case "SriLanka": self = .sriLanka
-        case "Barbados": self = .barbados
-        case "SyrianArabRepublic": self = .syrianArabRepublic
-        case "Nicaragua": self = .nicaragua
-        case "Chile": self = .chile
-        case "Australia": self = .australia
-        case "Andorra": self = .andorra
-        case "Bangladesh": self = .bangladesh
-        case "SaoTomeAndPrincipe": self = .saoTomeAndPrincipe
-        case "Estonia": self = .estonia
-        case "Uae": self = .uae
-        case "Norway": self = .norway
-        case "Philippines": self = .philippines
-        case "Macao": self = .macao
-        case "Fiji": self = .fiji
-        case "Russia": self = .russia
-        case "Panama": self = .panama
-        case "Myanmar": self = .myanmar
-        case "Kyrgyzstan": self = .kyrgyzstan
-        case "Singapore": self = .singapore
-        case "Malaysia": self = .malaysia
-        case "ElSalvador": self = .elSalvador
-        case "Iraq": self = .iraq
-        case "Anguilla": self = .anguilla
-        case "NewCaledonia": self = .newCaledonia
-        case "FrenchGuiana": self = .frenchGuiana
-        case "Niger": self = .niger
-        case "Dominica": self = .dominica
-        case "Belize": self = .belize
-        case "Georgia": self = .georgia
-        case "Bahamas": self = .bahamas
-        case "Sweden": self = .sweden
-        case "Liberia": self = .liberia
-        case "Ecuador": self = .ecuador
-        case "Indonesia": self = .indonesia
-        case "SaintPierreMiquelon": self = .saintPierreMiquelon
-        case "Brazil": self = .brazil
-        case "Tunisia": self = .tunisia
-        case "Ghana": self = .ghana
-        case "India": self = .india
-        case "Gambia": self = .gambia
-        case "Qatar": self = .qatar
-        case "TrinidadAndTobago": self = .trinidadAndTobago
-        case "Djibouti": self = .djibouti
-        case "Turkey": self = .turkey
-        case "Liechtenstein": self = .liechtenstein
-        case "Grenada": self = .grenada
-        case "BritishVirginIslands": self = .britishVirginIslands
-        case "Comoros": self = .comoros
-        case "Cameroon": self = .cameroon
-        case "Azerbaijan": self = .azerbaijan
-        case "SouthSudan": self = .southSudan
-        case "Kazakhstan": self = .kazakhstan
-        case "FalklandIslandsMalvinas": self = .falklandIslandsMalvinas
-        case "Belarus": self = .belarus
-        case "Greenland": self = .greenland
-        case "Botswana": self = .botswana
-        case "Israel": self = .israel
-        case "Malawi": self = .malawi
-        case "Micronesia": self = .micronesia
-        case "Spain": self = .spain
-        case "Hungary": self = .hungary
-        case "Uzbekistan": self = .uzbekistan
-        case "GuineaBissau": self = .guineaBissau
-        case "Germany": self = .germany
-        case "Guyana": self = .guyana
-        case "Bolivia": self = .bolivia
-        case "Gabon": self = .gabon
-        case "Finland": self = .finland
-        case "Canada": self = .canada
-        case "Afghanistan": self = .afghanistan
-        case "SaintMartin": self = .saintMartin
-        case "SierraLeone": self = .sierraLeone
-        case "Slovakia": self = .slovakia
-        case "Chad": self = .chad
-        case "TurksAndCaicosIslands": self = .turksAndCaicosIslands
-        case "Argentina": self = .argentina
-        case "Gibraltar": self = .gibraltar
-        case "Latvia": self = .latvia
-        case "Netherlands": self = .netherlands
-        case "Serbia": self = .serbia
-        case "CaribbeanNetherlands": self = .caribbeanNetherlands
-        case "CoteDIvoire": self = .coteDIvoire
-        case "Somalia": self = .somalia
-        case "Luxembourg": self = .luxembourg
-        case "HolySeeVaticanCityState": self = .holySeeVaticanCityState
-        case "Pakistan": self = .pakistan
-        case "Cuba": self = .cuba
-        case "Vietnam": self = .vietnam
-        case "Bahrain": self = .bahrain
-        case "Greece": self = .greece
-        case "AntiguaAndBarbuda": self = .antiguaAndBarbuda
-        case "Paraguay": self = .paraguay
-        case "Martinique": self = .martinique
-        case "Jordan": self = .jordan
-        case "FaroeIslands": self = .faroeIslands
-        case "Montserrat": self = .montserrat
-        case "Czechia": self = .czechia
-        case "Brunei": self = .brunei
-        case "Kuwait": self = .kuwait
-        case "Zambia": self = .zambia
-        case "Montenegro": self = .montenegro
-        case "Sudan": self = .sudan
-        case "Suriname": self = .suriname
-        case "IsleOfMan": self = .isleOfMan
-        case "Switzerland": self = .switzerland
-        case "Cambodia": self = .cambodia
-        case "France": self = .france
-        case "Angola": self = .angola
         case "SKorea": self = .sKorea
-        case "Benin": self = .benin
-        case "Portugal": self = .portugal
-        case "Oman": self = .oman
-        case "Denmark": self = .denmark
-        case "Palestine": self = .palestine
-        case "DominicanRepublic": self = .dominicanRepublic
-        case "Uganda": self = .uganda
-        case "Bosnia": self = .bosnia
-        case "SintMaarten": self = .sintMaarten
-        case "Romania": self = .romania
-        case "Colombia": self = .colombia
-        case "Yemen": self = .yemen
-        case "Monaco": self = .monaco
-        case "Guatemala": self = .guatemala
-        case "ChannelIslands": self = .channelIslands
-        case "Mayotte": self = .mayotte
-        case "BurkinaFaso": self = .burkinaFaso
-        case "Aruba": self = .aruba
-        case "Taiwan": self = .taiwan
-        case "Zimbabwe": self = .zimbabwe
-        case "Poland": self = .poland
-        case "WesternSahara": self = .westernSahara
-        case "Algeria": self = .algeria
-        case "Nigeria": self = .nigeria
-        case "Malta": self = .malta
-        case "TimorLeste": self = .timorLeste
-        case "Drc": self = .drc
-        case "Lithuania": self = .lithuania
-        case "Bermuda": self = .bermuda
-        case "Cyprus": self = .cyprus
-        case "Jamaica": self = .jamaica
-        case "Mauritania": self = .mauritania
-        case "Senegal": self = .senegal
-        case "CaboVerde": self = .caboVerde
-        case "Tajikistan": self = .tajikistan
-        case "Usa": self = .usa
-        case "Moldova": self = .moldova
-        case "Reunion": self = .reunion
-        case "Namibia": self = .namibia
-        case "Eritrea": self = .eritrea
-        case "SaintVincentAndTheGrenadines": self = .saintVincentAndTheGrenadines
-        case "Italy": self = .italy
-        case "Congo": self = .congo
-        case "China": self = .china
-        case "SouthAfrica": self = .southAfrica
-        case "Iceland": self = .iceland
-        case "Lebanon": self = .lebanon
-        case "Kenya": self = .kenya
-        case "Uruguay": self = .uruguay
         case "Mongolia": self = .mongolia
-        case "Tanzania": self = .tanzania
-        case "Albania": self = .albania
-        case "Austria": self = .austria
-        case "Macedonia": self = .macedonia
-        case "Guadeloupe": self = .guadeloupe
-        case "CostaRica": self = .costaRica
+        case "SyrianArabRepublic": self = .syrianArabRepublic
+        case "MsZaandam": self = .msZaandam
+        case "Denmark": self = .denmark
+        case "Bosnia": self = .bosnia
+        case "Honduras": self = .honduras
+        case "Vanuatu": self = .vanuatu
+        case "Monaco": self = .monaco
+        case "Romania": self = .romania
+        case "SouthSudan": self = .southSudan
+        case "Palestine": self = .palestine
+        case "Comoros": self = .comoros
+        case "Zimbabwe": self = .zimbabwe
+        case "NewCaledonia": self = .newCaledonia
+        case "CaymanIslands": self = .caymanIslands
+        case "Australia": self = .australia
+        case "Azerbaijan": self = .azerbaijan
+        case "CentralAfricanRepublic": self = .centralAfricanRepublic
+        case "Fiji": self = .fiji
+        case "Nepal": self = .nepal
+        case "Tunisia": self = .tunisia
+        case "HongKong": self = .hongKong
+        case "Haiti": self = .haiti
+        case "Bahamas": self = .bahamas
+        case "TimorLeste": self = .timorLeste
         case "NewZealand": self = .newZealand
-        case "Mexico": self = .mexico
-        case "StBarth": self = .stBarth
-        case "SaintLucia": self = .saintLucia
-        case "Rwanda": self = .rwanda
-        case "Venezuela": self = .venezuela
-        case "Croatia": self = .croatia
-        case "SaudiArabia": self = .saudiArabia
-        case "MarshallIslands": self = .marshallIslands
-        case "DiamondPrincess": self = .diamondPrincess
-        case "Peru": self = .peru
-        case "Ukraine": self = .ukraine
+        case "Ireland": self = .ireland
+        case "Brazil": self = .brazil
+        case "AntiguaAndBarbuda": self = .antiguaAndBarbuda
+        case "Somalia": self = .somalia
+        case "BritishVirginIslands": self = .britishVirginIslands
+        case "Jordan": self = .jordan
+        case "Barbados": self = .barbados
+        case "Montserrat": self = .montserrat
+        case "Vietnam": self = .vietnam
+        case "Uganda": self = .uganda
+        case "Andorra": self = .andorra
+        case "Tajikistan": self = .tajikistan
         case "Maldives": self = .maldives
-        case "Madagascar": self = .madagascar
+        case "Panama": self = .panama
+        case "Morocco": self = .morocco
+        case "FaroeIslands": self = .faroeIslands
+        case "IsleOfMan": self = .isleOfMan
+        case "Egypt": self = .egypt
+        case "Belize": self = .belize
+        case "Benin": self = .benin
+        case "Lebanon": self = .lebanon
+        case "Poland": self = .poland
+        case "Gabon": self = .gabon
+        case "Kuwait": self = .kuwait
+        case "StBarth": self = .stBarth
+        case "Bolivia": self = .bolivia
+        case "DiamondPrincess": self = .diamondPrincess
+        case "China": self = .china
+        case "Algeria": self = .algeria
+        case "Turkey": self = .turkey
+        case "Finland": self = .finland
+        case "Ghana": self = .ghana
+        case "Micronesia": self = .micronesia
+        case "Gambia": self = .gambia
+        case "Moldova": self = .moldova
+        case "Suriname": self = .suriname
+        case "Oman": self = .oman
+        case "Bulgaria": self = .bulgaria
+        case "Gibraltar": self = .gibraltar
+        case "Greenland": self = .greenland
+        case "Bermuda": self = .bermuda
+        case "Indonesia": self = .indonesia
+        case "Drc": self = .drc
+        case "Grenada": self = .grenada
+        case "CostaRica": self = .costaRica
+        case "Kenya": self = .kenya
+        case "Mozambique": self = .mozambique
+        case "Singapore": self = .singapore
+        case "Ukraine": self = .ukraine
+        case "Argentina": self = .argentina
+        case "HolySeeVaticanCityState": self = .holySeeVaticanCityState
+        case "Afghanistan": self = .afghanistan
+        case "SaudiArabia": self = .saudiArabia
+        case "Macedonia": self = .macedonia
+        case "LibyanArabJamahiriya": self = .libyanArabJamahiriya
+        case "Spain": self = .spain
+        case "Malawi": self = .malawi
+        case "SaintKittsAndNevis": self = .saintKittsAndNevis
+        case "Italy": self = .italy
+        case "Namibia": self = .namibia
+        case "Uzbekistan": self = .uzbekistan
+        case "Ethiopia": self = .ethiopia
+        case "Paraguay": self = .paraguay
+        case "Samoa": self = .samoa
+        case "Qatar": self = .qatar
+        case "Lesotho": self = .lesotho
+        case "Dominica": self = .dominica
+        case "FalklandIslandsMalvinas": self = .falklandIslandsMalvinas
+        case "Guinea": self = .guinea
+        case "Cambodia": self = .cambodia
+        case "India": self = .india
+        case "Georgia": self = .georgia
+        case "France": self = .france
+        case "Latvia": self = .latvia
+        case "Mauritania": self = .mauritania
+        case "Mauritius": self = .mauritius
+        case "Jamaica": self = .jamaica
+        case "Uk": self = .uk
+        case "Nigeria": self = .nigeria
+        case "Uruguay": self = .uruguay
+        case "DominicanRepublic": self = .dominicanRepublic
+        case "Israel": self = .israel
+        case "TrinidadAndTobago": self = .trinidadAndTobago
+        case "Japan": self = .japan
+        case "Guyana": self = .guyana
+        case "Angola": self = .angola
+        case "TurksAndCaicosIslands": self = .turksAndCaicosIslands
+        case "Djibouti": self = .djibouti
+        case "SaoTomeAndPrincipe": self = .saoTomeAndPrincipe
+        case "Belarus": self = .belarus
+        case "Anguilla": self = .anguilla
+        case "Lithuania": self = .lithuania
+        case "Chad": self = .chad
+        case "Liechtenstein": self = .liechtenstein
+        case "Seychelles": self = .seychelles
+        case "Cameroon": self = .cameroon
+        case "FrenchPolynesia": self = .frenchPolynesia
+        case "Switzerland": self = .switzerland
+        case "Iraq": self = .iraq
+        case "Eritrea": self = .eritrea
+        case "SaintPierreMiquelon": self = .saintPierreMiquelon
+        case "Serbia": self = .serbia
+        case "Aruba": self = .aruba
+        case "Portugal": self = .portugal
         case "LaoPeopleSDemocraticRepublic": self = .laoPeopleSDemocraticRepublic
         case "Belgium": self = .belgium
-        case "CaymanIslands": self = .caymanIslands
-        case "Ethiopia": self = .ethiopia
-        case "Mali": self = .mali
-        case "Armenia": self = .armenia
-        case "HongKong": self = .hongKong
+        case "Estonia": self = .estonia
+        case "MarshallIslands": self = .marshallIslands
+        case "Cuba": self = .cuba
+        case "Montenegro": self = .montenegro
+        case "WesternSahara": self = .westernSahara
+        case "Bahrain": self = .bahrain
+        case "ElSalvador": self = .elSalvador
+        case "Mayotte": self = .mayotte
+        case "Czechia": self = .czechia
+        case "Malaysia": self = .malaysia
+        case "WallisAndFutuna": self = .wallisAndFutuna
+        case "Iran": self = .iran
+        case "Slovenia": self = .slovenia
+        case "Croatia": self = .croatia
+        case "Sudan": self = .sudan
+        case "Slovakia": self = .slovakia
+        case "CaribbeanNetherlands": self = .caribbeanNetherlands
+        case "Nicaragua": self = .nicaragua
+        case "SanMarino": self = .sanMarino
+        case "Sweden": self = .sweden
+        case "Madagascar": self = .madagascar
+        case "Uae": self = .uae
+        case "Norway": self = .norway
+        case "Cyprus": self = .cyprus
+        case "Colombia": self = .colombia
+        case "SaintLucia": self = .saintLucia
+        case "SriLanka": self = .sriLanka
+        case "Curacao": self = .curacao
+        case "Reunion": self = .reunion
+        case "Bangladesh": self = .bangladesh
+        case "SaintVincentAndTheGrenadines": self = .saintVincentAndTheGrenadines
+        case "Chile": self = .chile
+        case "SolomonIslands": self = .solomonIslands
+        case "Netherlands": self = .netherlands
+        case "Myanmar": self = .myanmar
+        case "Russia": self = .russia
+        case "Guadeloupe": self = .guadeloupe
+        case "Malta": self = .malta
+        case "Pakistan": self = .pakistan
+        case "CaboVerde": self = .caboVerde
+        case "Thailand": self = .thailand
+        case "PapuaNewGuinea": self = .papuaNewGuinea
+        case "Canada": self = .canada
+        case "Macao": self = .macao
+        case "Senegal": self = .senegal
+        case "Germany": self = .germany
+        case "Guatemala": self = .guatemala
+        case "BurkinaFaso": self = .burkinaFaso
+        case "Mexico": self = .mexico
         case "Togo": self = .togo
+        case "Armenia": self = .armenia
+        case "Kyrgyzstan": self = .kyrgyzstan
+        case "Brunei": self = .brunei
+        case "Philippines": self = .philippines
+        case "Iceland": self = .iceland
+        case "Venezuela": self = .venezuela
+        case "FrenchGuiana": self = .frenchGuiana
+        case "Peru": self = .peru
+        case "Taiwan": self = .taiwan
+        case "SaintMartin": self = .saintMartin
+        case "Congo": self = .congo
+        case "Tanzania": self = .tanzania
+        case "Zambia": self = .zambia
+        case "Albania": self = .albania
+        case "GuineaBissau": self = .guineaBissau
+        case "ChannelIslands": self = .channelIslands
+        case "Burundi": self = .burundi
+        case "Mali": self = .mali
+        case "Bhutan": self = .bhutan
+        case "Yemen": self = .yemen
+        case "SintMaarten": self = .sintMaarten
+        case "Luxembourg": self = .luxembourg
+        case "Usa": self = .usa
+        case "Rwanda": self = .rwanda
+        case "SouthAfrica": self = .southAfrica
+        case "Greece": self = .greece
+        case "Hungary": self = .hungary
+        case "Botswana": self = .botswana
+        case "Swaziland": self = .swaziland
+        case "Ecuador": self = .ecuador
+        case "Liberia": self = .liberia
+        case "Austria": self = .austria
+        case "EquatorialGuinea": self = .equatorialGuinea
+        case "Martinique": self = .martinique
+        case "Kazakhstan": self = .kazakhstan
+        case "Niger": self = .niger
+        case "SierraLeone": self = .sierraLeone
+        case "CoteDIvoire": self = .coteDIvoire
         default: self = .__unknown(rawValue)
       }
     }
 
     public var rawValue: RawValue {
       switch self {
-        case .haiti: return "Haiti"
-        case .solomonIslands: return "SolomonIslands"
-        case .libyanArabJamahiriya: return "LibyanArabJamahiriya"
-        case .centralAfricanRepublic: return "CentralAfricanRepublic"
-        case .wallisAndFutuna: return "WallisAndFutuna"
-        case .egypt: return "Egypt"
-        case .frenchPolynesia: return "FrenchPolynesia"
-        case .equatorialGuinea: return "EquatorialGuinea"
-        case .curacao: return "Curacao"
-        case .samoa: return "Samoa"
-        case .honduras: return "Honduras"
-        case .mozambique: return "Mozambique"
-        case .msZaandam: return "MsZaandam"
-        case .slovenia: return "Slovenia"
-        case .bhutan: return "Bhutan"
-        case .morocco: return "Morocco"
-        case .bulgaria: return "Bulgaria"
-        case .sanMarino: return "SanMarino"
-        case .guinea: return "Guinea"
-        case .iran: return "Iran"
-        case .burundi: return "Burundi"
-        case .lesotho: return "Lesotho"
-        case .mauritius: return "Mauritius"
-        case .ireland: return "Ireland"
-        case .papuaNewGuinea: return "PapuaNewGuinea"
-        case .swaziland: return "Swaziland"
-        case .saintKittsAndNevis: return "SaintKittsAndNevis"
-        case .seychelles: return "Seychelles"
-        case .japan: return "Japan"
-        case .vanuatu: return "Vanuatu"
-        case .uk: return "Uk"
-        case .thailand: return "Thailand"
-        case .nepal: return "Nepal"
-        case .sriLanka: return "SriLanka"
-        case .barbados: return "Barbados"
-        case .syrianArabRepublic: return "SyrianArabRepublic"
-        case .nicaragua: return "Nicaragua"
-        case .chile: return "Chile"
-        case .australia: return "Australia"
-        case .andorra: return "Andorra"
-        case .bangladesh: return "Bangladesh"
-        case .saoTomeAndPrincipe: return "SaoTomeAndPrincipe"
-        case .estonia: return "Estonia"
-        case .uae: return "Uae"
-        case .norway: return "Norway"
-        case .philippines: return "Philippines"
-        case .macao: return "Macao"
-        case .fiji: return "Fiji"
-        case .russia: return "Russia"
-        case .panama: return "Panama"
-        case .myanmar: return "Myanmar"
-        case .kyrgyzstan: return "Kyrgyzstan"
-        case .singapore: return "Singapore"
-        case .malaysia: return "Malaysia"
-        case .elSalvador: return "ElSalvador"
-        case .iraq: return "Iraq"
-        case .anguilla: return "Anguilla"
-        case .newCaledonia: return "NewCaledonia"
-        case .frenchGuiana: return "FrenchGuiana"
-        case .niger: return "Niger"
-        case .dominica: return "Dominica"
-        case .belize: return "Belize"
-        case .georgia: return "Georgia"
-        case .bahamas: return "Bahamas"
-        case .sweden: return "Sweden"
-        case .liberia: return "Liberia"
-        case .ecuador: return "Ecuador"
-        case .indonesia: return "Indonesia"
-        case .saintPierreMiquelon: return "SaintPierreMiquelon"
-        case .brazil: return "Brazil"
-        case .tunisia: return "Tunisia"
-        case .ghana: return "Ghana"
-        case .india: return "India"
-        case .gambia: return "Gambia"
-        case .qatar: return "Qatar"
-        case .trinidadAndTobago: return "TrinidadAndTobago"
-        case .djibouti: return "Djibouti"
-        case .turkey: return "Turkey"
-        case .liechtenstein: return "Liechtenstein"
-        case .grenada: return "Grenada"
-        case .britishVirginIslands: return "BritishVirginIslands"
-        case .comoros: return "Comoros"
-        case .cameroon: return "Cameroon"
-        case .azerbaijan: return "Azerbaijan"
-        case .southSudan: return "SouthSudan"
-        case .kazakhstan: return "Kazakhstan"
-        case .falklandIslandsMalvinas: return "FalklandIslandsMalvinas"
-        case .belarus: return "Belarus"
-        case .greenland: return "Greenland"
-        case .botswana: return "Botswana"
-        case .israel: return "Israel"
-        case .malawi: return "Malawi"
-        case .micronesia: return "Micronesia"
-        case .spain: return "Spain"
-        case .hungary: return "Hungary"
-        case .uzbekistan: return "Uzbekistan"
-        case .guineaBissau: return "GuineaBissau"
-        case .germany: return "Germany"
-        case .guyana: return "Guyana"
-        case .bolivia: return "Bolivia"
-        case .gabon: return "Gabon"
-        case .finland: return "Finland"
-        case .canada: return "Canada"
-        case .afghanistan: return "Afghanistan"
-        case .saintMartin: return "SaintMartin"
-        case .sierraLeone: return "SierraLeone"
-        case .slovakia: return "Slovakia"
-        case .chad: return "Chad"
-        case .turksAndCaicosIslands: return "TurksAndCaicosIslands"
-        case .argentina: return "Argentina"
-        case .gibraltar: return "Gibraltar"
-        case .latvia: return "Latvia"
-        case .netherlands: return "Netherlands"
-        case .serbia: return "Serbia"
-        case .caribbeanNetherlands: return "CaribbeanNetherlands"
-        case .coteDIvoire: return "CoteDIvoire"
-        case .somalia: return "Somalia"
-        case .luxembourg: return "Luxembourg"
-        case .holySeeVaticanCityState: return "HolySeeVaticanCityState"
-        case .pakistan: return "Pakistan"
-        case .cuba: return "Cuba"
-        case .vietnam: return "Vietnam"
-        case .bahrain: return "Bahrain"
-        case .greece: return "Greece"
-        case .antiguaAndBarbuda: return "AntiguaAndBarbuda"
-        case .paraguay: return "Paraguay"
-        case .martinique: return "Martinique"
-        case .jordan: return "Jordan"
-        case .faroeIslands: return "FaroeIslands"
-        case .montserrat: return "Montserrat"
-        case .czechia: return "Czechia"
-        case .brunei: return "Brunei"
-        case .kuwait: return "Kuwait"
-        case .zambia: return "Zambia"
-        case .montenegro: return "Montenegro"
-        case .sudan: return "Sudan"
-        case .suriname: return "Suriname"
-        case .isleOfMan: return "IsleOfMan"
-        case .switzerland: return "Switzerland"
-        case .cambodia: return "Cambodia"
-        case .france: return "France"
-        case .angola: return "Angola"
         case .sKorea: return "SKorea"
-        case .benin: return "Benin"
-        case .portugal: return "Portugal"
-        case .oman: return "Oman"
-        case .denmark: return "Denmark"
-        case .palestine: return "Palestine"
-        case .dominicanRepublic: return "DominicanRepublic"
-        case .uganda: return "Uganda"
-        case .bosnia: return "Bosnia"
-        case .sintMaarten: return "SintMaarten"
-        case .romania: return "Romania"
-        case .colombia: return "Colombia"
-        case .yemen: return "Yemen"
-        case .monaco: return "Monaco"
-        case .guatemala: return "Guatemala"
-        case .channelIslands: return "ChannelIslands"
-        case .mayotte: return "Mayotte"
-        case .burkinaFaso: return "BurkinaFaso"
-        case .aruba: return "Aruba"
-        case .taiwan: return "Taiwan"
-        case .zimbabwe: return "Zimbabwe"
-        case .poland: return "Poland"
-        case .westernSahara: return "WesternSahara"
-        case .algeria: return "Algeria"
-        case .nigeria: return "Nigeria"
-        case .malta: return "Malta"
-        case .timorLeste: return "TimorLeste"
-        case .drc: return "Drc"
-        case .lithuania: return "Lithuania"
-        case .bermuda: return "Bermuda"
-        case .cyprus: return "Cyprus"
-        case .jamaica: return "Jamaica"
-        case .mauritania: return "Mauritania"
-        case .senegal: return "Senegal"
-        case .caboVerde: return "CaboVerde"
-        case .tajikistan: return "Tajikistan"
-        case .usa: return "Usa"
-        case .moldova: return "Moldova"
-        case .reunion: return "Reunion"
-        case .namibia: return "Namibia"
-        case .eritrea: return "Eritrea"
-        case .saintVincentAndTheGrenadines: return "SaintVincentAndTheGrenadines"
-        case .italy: return "Italy"
-        case .congo: return "Congo"
-        case .china: return "China"
-        case .southAfrica: return "SouthAfrica"
-        case .iceland: return "Iceland"
-        case .lebanon: return "Lebanon"
-        case .kenya: return "Kenya"
-        case .uruguay: return "Uruguay"
         case .mongolia: return "Mongolia"
-        case .tanzania: return "Tanzania"
-        case .albania: return "Albania"
-        case .austria: return "Austria"
-        case .macedonia: return "Macedonia"
-        case .guadeloupe: return "Guadeloupe"
-        case .costaRica: return "CostaRica"
+        case .syrianArabRepublic: return "SyrianArabRepublic"
+        case .msZaandam: return "MsZaandam"
+        case .denmark: return "Denmark"
+        case .bosnia: return "Bosnia"
+        case .honduras: return "Honduras"
+        case .vanuatu: return "Vanuatu"
+        case .monaco: return "Monaco"
+        case .romania: return "Romania"
+        case .southSudan: return "SouthSudan"
+        case .palestine: return "Palestine"
+        case .comoros: return "Comoros"
+        case .zimbabwe: return "Zimbabwe"
+        case .newCaledonia: return "NewCaledonia"
+        case .caymanIslands: return "CaymanIslands"
+        case .australia: return "Australia"
+        case .azerbaijan: return "Azerbaijan"
+        case .centralAfricanRepublic: return "CentralAfricanRepublic"
+        case .fiji: return "Fiji"
+        case .nepal: return "Nepal"
+        case .tunisia: return "Tunisia"
+        case .hongKong: return "HongKong"
+        case .haiti: return "Haiti"
+        case .bahamas: return "Bahamas"
+        case .timorLeste: return "TimorLeste"
         case .newZealand: return "NewZealand"
-        case .mexico: return "Mexico"
-        case .stBarth: return "StBarth"
-        case .saintLucia: return "SaintLucia"
-        case .rwanda: return "Rwanda"
-        case .venezuela: return "Venezuela"
-        case .croatia: return "Croatia"
-        case .saudiArabia: return "SaudiArabia"
-        case .marshallIslands: return "MarshallIslands"
-        case .diamondPrincess: return "DiamondPrincess"
-        case .peru: return "Peru"
-        case .ukraine: return "Ukraine"
+        case .ireland: return "Ireland"
+        case .brazil: return "Brazil"
+        case .antiguaAndBarbuda: return "AntiguaAndBarbuda"
+        case .somalia: return "Somalia"
+        case .britishVirginIslands: return "BritishVirginIslands"
+        case .jordan: return "Jordan"
+        case .barbados: return "Barbados"
+        case .montserrat: return "Montserrat"
+        case .vietnam: return "Vietnam"
+        case .uganda: return "Uganda"
+        case .andorra: return "Andorra"
+        case .tajikistan: return "Tajikistan"
         case .maldives: return "Maldives"
-        case .madagascar: return "Madagascar"
+        case .panama: return "Panama"
+        case .morocco: return "Morocco"
+        case .faroeIslands: return "FaroeIslands"
+        case .isleOfMan: return "IsleOfMan"
+        case .egypt: return "Egypt"
+        case .belize: return "Belize"
+        case .benin: return "Benin"
+        case .lebanon: return "Lebanon"
+        case .poland: return "Poland"
+        case .gabon: return "Gabon"
+        case .kuwait: return "Kuwait"
+        case .stBarth: return "StBarth"
+        case .bolivia: return "Bolivia"
+        case .diamondPrincess: return "DiamondPrincess"
+        case .china: return "China"
+        case .algeria: return "Algeria"
+        case .turkey: return "Turkey"
+        case .finland: return "Finland"
+        case .ghana: return "Ghana"
+        case .micronesia: return "Micronesia"
+        case .gambia: return "Gambia"
+        case .moldova: return "Moldova"
+        case .suriname: return "Suriname"
+        case .oman: return "Oman"
+        case .bulgaria: return "Bulgaria"
+        case .gibraltar: return "Gibraltar"
+        case .greenland: return "Greenland"
+        case .bermuda: return "Bermuda"
+        case .indonesia: return "Indonesia"
+        case .drc: return "Drc"
+        case .grenada: return "Grenada"
+        case .costaRica: return "CostaRica"
+        case .kenya: return "Kenya"
+        case .mozambique: return "Mozambique"
+        case .singapore: return "Singapore"
+        case .ukraine: return "Ukraine"
+        case .argentina: return "Argentina"
+        case .holySeeVaticanCityState: return "HolySeeVaticanCityState"
+        case .afghanistan: return "Afghanistan"
+        case .saudiArabia: return "SaudiArabia"
+        case .macedonia: return "Macedonia"
+        case .libyanArabJamahiriya: return "LibyanArabJamahiriya"
+        case .spain: return "Spain"
+        case .malawi: return "Malawi"
+        case .saintKittsAndNevis: return "SaintKittsAndNevis"
+        case .italy: return "Italy"
+        case .namibia: return "Namibia"
+        case .uzbekistan: return "Uzbekistan"
+        case .ethiopia: return "Ethiopia"
+        case .paraguay: return "Paraguay"
+        case .samoa: return "Samoa"
+        case .qatar: return "Qatar"
+        case .lesotho: return "Lesotho"
+        case .dominica: return "Dominica"
+        case .falklandIslandsMalvinas: return "FalklandIslandsMalvinas"
+        case .guinea: return "Guinea"
+        case .cambodia: return "Cambodia"
+        case .india: return "India"
+        case .georgia: return "Georgia"
+        case .france: return "France"
+        case .latvia: return "Latvia"
+        case .mauritania: return "Mauritania"
+        case .mauritius: return "Mauritius"
+        case .jamaica: return "Jamaica"
+        case .uk: return "Uk"
+        case .nigeria: return "Nigeria"
+        case .uruguay: return "Uruguay"
+        case .dominicanRepublic: return "DominicanRepublic"
+        case .israel: return "Israel"
+        case .trinidadAndTobago: return "TrinidadAndTobago"
+        case .japan: return "Japan"
+        case .guyana: return "Guyana"
+        case .angola: return "Angola"
+        case .turksAndCaicosIslands: return "TurksAndCaicosIslands"
+        case .djibouti: return "Djibouti"
+        case .saoTomeAndPrincipe: return "SaoTomeAndPrincipe"
+        case .belarus: return "Belarus"
+        case .anguilla: return "Anguilla"
+        case .lithuania: return "Lithuania"
+        case .chad: return "Chad"
+        case .liechtenstein: return "Liechtenstein"
+        case .seychelles: return "Seychelles"
+        case .cameroon: return "Cameroon"
+        case .frenchPolynesia: return "FrenchPolynesia"
+        case .switzerland: return "Switzerland"
+        case .iraq: return "Iraq"
+        case .eritrea: return "Eritrea"
+        case .saintPierreMiquelon: return "SaintPierreMiquelon"
+        case .serbia: return "Serbia"
+        case .aruba: return "Aruba"
+        case .portugal: return "Portugal"
         case .laoPeopleSDemocraticRepublic: return "LaoPeopleSDemocraticRepublic"
         case .belgium: return "Belgium"
-        case .caymanIslands: return "CaymanIslands"
-        case .ethiopia: return "Ethiopia"
-        case .mali: return "Mali"
-        case .armenia: return "Armenia"
-        case .hongKong: return "HongKong"
+        case .estonia: return "Estonia"
+        case .marshallIslands: return "MarshallIslands"
+        case .cuba: return "Cuba"
+        case .montenegro: return "Montenegro"
+        case .westernSahara: return "WesternSahara"
+        case .bahrain: return "Bahrain"
+        case .elSalvador: return "ElSalvador"
+        case .mayotte: return "Mayotte"
+        case .czechia: return "Czechia"
+        case .malaysia: return "Malaysia"
+        case .wallisAndFutuna: return "WallisAndFutuna"
+        case .iran: return "Iran"
+        case .slovenia: return "Slovenia"
+        case .croatia: return "Croatia"
+        case .sudan: return "Sudan"
+        case .slovakia: return "Slovakia"
+        case .caribbeanNetherlands: return "CaribbeanNetherlands"
+        case .nicaragua: return "Nicaragua"
+        case .sanMarino: return "SanMarino"
+        case .sweden: return "Sweden"
+        case .madagascar: return "Madagascar"
+        case .uae: return "Uae"
+        case .norway: return "Norway"
+        case .cyprus: return "Cyprus"
+        case .colombia: return "Colombia"
+        case .saintLucia: return "SaintLucia"
+        case .sriLanka: return "SriLanka"
+        case .curacao: return "Curacao"
+        case .reunion: return "Reunion"
+        case .bangladesh: return "Bangladesh"
+        case .saintVincentAndTheGrenadines: return "SaintVincentAndTheGrenadines"
+        case .chile: return "Chile"
+        case .solomonIslands: return "SolomonIslands"
+        case .netherlands: return "Netherlands"
+        case .myanmar: return "Myanmar"
+        case .russia: return "Russia"
+        case .guadeloupe: return "Guadeloupe"
+        case .malta: return "Malta"
+        case .pakistan: return "Pakistan"
+        case .caboVerde: return "CaboVerde"
+        case .thailand: return "Thailand"
+        case .papuaNewGuinea: return "PapuaNewGuinea"
+        case .canada: return "Canada"
+        case .macao: return "Macao"
+        case .senegal: return "Senegal"
+        case .germany: return "Germany"
+        case .guatemala: return "Guatemala"
+        case .burkinaFaso: return "BurkinaFaso"
+        case .mexico: return "Mexico"
         case .togo: return "Togo"
+        case .armenia: return "Armenia"
+        case .kyrgyzstan: return "Kyrgyzstan"
+        case .brunei: return "Brunei"
+        case .philippines: return "Philippines"
+        case .iceland: return "Iceland"
+        case .venezuela: return "Venezuela"
+        case .frenchGuiana: return "FrenchGuiana"
+        case .peru: return "Peru"
+        case .taiwan: return "Taiwan"
+        case .saintMartin: return "SaintMartin"
+        case .congo: return "Congo"
+        case .tanzania: return "Tanzania"
+        case .zambia: return "Zambia"
+        case .albania: return "Albania"
+        case .guineaBissau: return "GuineaBissau"
+        case .channelIslands: return "ChannelIslands"
+        case .burundi: return "Burundi"
+        case .mali: return "Mali"
+        case .bhutan: return "Bhutan"
+        case .yemen: return "Yemen"
+        case .sintMaarten: return "SintMaarten"
+        case .luxembourg: return "Luxembourg"
+        case .usa: return "Usa"
+        case .rwanda: return "Rwanda"
+        case .southAfrica: return "SouthAfrica"
+        case .greece: return "Greece"
+        case .hungary: return "Hungary"
+        case .botswana: return "Botswana"
+        case .swaziland: return "Swaziland"
+        case .ecuador: return "Ecuador"
+        case .liberia: return "Liberia"
+        case .austria: return "Austria"
+        case .equatorialGuinea: return "EquatorialGuinea"
+        case .martinique: return "Martinique"
+        case .kazakhstan: return "Kazakhstan"
+        case .niger: return "Niger"
+        case .sierraLeone: return "SierraLeone"
+        case .coteDIvoire: return "CoteDIvoire"
         case .__unknown(let value): return value
       }
     }
 
     public static func == (lhs: CountryIdentifier, rhs: CountryIdentifier) -> Bool {
       switch (lhs, rhs) {
-        case (.haiti, .haiti): return true
-        case (.solomonIslands, .solomonIslands): return true
-        case (.libyanArabJamahiriya, .libyanArabJamahiriya): return true
-        case (.centralAfricanRepublic, .centralAfricanRepublic): return true
-        case (.wallisAndFutuna, .wallisAndFutuna): return true
-        case (.egypt, .egypt): return true
-        case (.frenchPolynesia, .frenchPolynesia): return true
-        case (.equatorialGuinea, .equatorialGuinea): return true
-        case (.curacao, .curacao): return true
-        case (.samoa, .samoa): return true
-        case (.honduras, .honduras): return true
-        case (.mozambique, .mozambique): return true
-        case (.msZaandam, .msZaandam): return true
-        case (.slovenia, .slovenia): return true
-        case (.bhutan, .bhutan): return true
-        case (.morocco, .morocco): return true
-        case (.bulgaria, .bulgaria): return true
-        case (.sanMarino, .sanMarino): return true
-        case (.guinea, .guinea): return true
-        case (.iran, .iran): return true
-        case (.burundi, .burundi): return true
-        case (.lesotho, .lesotho): return true
-        case (.mauritius, .mauritius): return true
-        case (.ireland, .ireland): return true
-        case (.papuaNewGuinea, .papuaNewGuinea): return true
-        case (.swaziland, .swaziland): return true
-        case (.saintKittsAndNevis, .saintKittsAndNevis): return true
-        case (.seychelles, .seychelles): return true
-        case (.japan, .japan): return true
-        case (.vanuatu, .vanuatu): return true
-        case (.uk, .uk): return true
-        case (.thailand, .thailand): return true
-        case (.nepal, .nepal): return true
-        case (.sriLanka, .sriLanka): return true
-        case (.barbados, .barbados): return true
-        case (.syrianArabRepublic, .syrianArabRepublic): return true
-        case (.nicaragua, .nicaragua): return true
-        case (.chile, .chile): return true
-        case (.australia, .australia): return true
-        case (.andorra, .andorra): return true
-        case (.bangladesh, .bangladesh): return true
-        case (.saoTomeAndPrincipe, .saoTomeAndPrincipe): return true
-        case (.estonia, .estonia): return true
-        case (.uae, .uae): return true
-        case (.norway, .norway): return true
-        case (.philippines, .philippines): return true
-        case (.macao, .macao): return true
-        case (.fiji, .fiji): return true
-        case (.russia, .russia): return true
-        case (.panama, .panama): return true
-        case (.myanmar, .myanmar): return true
-        case (.kyrgyzstan, .kyrgyzstan): return true
-        case (.singapore, .singapore): return true
-        case (.malaysia, .malaysia): return true
-        case (.elSalvador, .elSalvador): return true
-        case (.iraq, .iraq): return true
-        case (.anguilla, .anguilla): return true
-        case (.newCaledonia, .newCaledonia): return true
-        case (.frenchGuiana, .frenchGuiana): return true
-        case (.niger, .niger): return true
-        case (.dominica, .dominica): return true
-        case (.belize, .belize): return true
-        case (.georgia, .georgia): return true
-        case (.bahamas, .bahamas): return true
-        case (.sweden, .sweden): return true
-        case (.liberia, .liberia): return true
-        case (.ecuador, .ecuador): return true
-        case (.indonesia, .indonesia): return true
-        case (.saintPierreMiquelon, .saintPierreMiquelon): return true
-        case (.brazil, .brazil): return true
-        case (.tunisia, .tunisia): return true
-        case (.ghana, .ghana): return true
-        case (.india, .india): return true
-        case (.gambia, .gambia): return true
-        case (.qatar, .qatar): return true
-        case (.trinidadAndTobago, .trinidadAndTobago): return true
-        case (.djibouti, .djibouti): return true
-        case (.turkey, .turkey): return true
-        case (.liechtenstein, .liechtenstein): return true
-        case (.grenada, .grenada): return true
-        case (.britishVirginIslands, .britishVirginIslands): return true
-        case (.comoros, .comoros): return true
-        case (.cameroon, .cameroon): return true
-        case (.azerbaijan, .azerbaijan): return true
-        case (.southSudan, .southSudan): return true
-        case (.kazakhstan, .kazakhstan): return true
-        case (.falklandIslandsMalvinas, .falklandIslandsMalvinas): return true
-        case (.belarus, .belarus): return true
-        case (.greenland, .greenland): return true
-        case (.botswana, .botswana): return true
-        case (.israel, .israel): return true
-        case (.malawi, .malawi): return true
-        case (.micronesia, .micronesia): return true
-        case (.spain, .spain): return true
-        case (.hungary, .hungary): return true
-        case (.uzbekistan, .uzbekistan): return true
-        case (.guineaBissau, .guineaBissau): return true
-        case (.germany, .germany): return true
-        case (.guyana, .guyana): return true
-        case (.bolivia, .bolivia): return true
-        case (.gabon, .gabon): return true
-        case (.finland, .finland): return true
-        case (.canada, .canada): return true
-        case (.afghanistan, .afghanistan): return true
-        case (.saintMartin, .saintMartin): return true
-        case (.sierraLeone, .sierraLeone): return true
-        case (.slovakia, .slovakia): return true
-        case (.chad, .chad): return true
-        case (.turksAndCaicosIslands, .turksAndCaicosIslands): return true
-        case (.argentina, .argentina): return true
-        case (.gibraltar, .gibraltar): return true
-        case (.latvia, .latvia): return true
-        case (.netherlands, .netherlands): return true
-        case (.serbia, .serbia): return true
-        case (.caribbeanNetherlands, .caribbeanNetherlands): return true
-        case (.coteDIvoire, .coteDIvoire): return true
-        case (.somalia, .somalia): return true
-        case (.luxembourg, .luxembourg): return true
-        case (.holySeeVaticanCityState, .holySeeVaticanCityState): return true
-        case (.pakistan, .pakistan): return true
-        case (.cuba, .cuba): return true
-        case (.vietnam, .vietnam): return true
-        case (.bahrain, .bahrain): return true
-        case (.greece, .greece): return true
-        case (.antiguaAndBarbuda, .antiguaAndBarbuda): return true
-        case (.paraguay, .paraguay): return true
-        case (.martinique, .martinique): return true
-        case (.jordan, .jordan): return true
-        case (.faroeIslands, .faroeIslands): return true
-        case (.montserrat, .montserrat): return true
-        case (.czechia, .czechia): return true
-        case (.brunei, .brunei): return true
-        case (.kuwait, .kuwait): return true
-        case (.zambia, .zambia): return true
-        case (.montenegro, .montenegro): return true
-        case (.sudan, .sudan): return true
-        case (.suriname, .suriname): return true
-        case (.isleOfMan, .isleOfMan): return true
-        case (.switzerland, .switzerland): return true
-        case (.cambodia, .cambodia): return true
-        case (.france, .france): return true
-        case (.angola, .angola): return true
         case (.sKorea, .sKorea): return true
-        case (.benin, .benin): return true
-        case (.portugal, .portugal): return true
-        case (.oman, .oman): return true
-        case (.denmark, .denmark): return true
-        case (.palestine, .palestine): return true
-        case (.dominicanRepublic, .dominicanRepublic): return true
-        case (.uganda, .uganda): return true
-        case (.bosnia, .bosnia): return true
-        case (.sintMaarten, .sintMaarten): return true
-        case (.romania, .romania): return true
-        case (.colombia, .colombia): return true
-        case (.yemen, .yemen): return true
-        case (.monaco, .monaco): return true
-        case (.guatemala, .guatemala): return true
-        case (.channelIslands, .channelIslands): return true
-        case (.mayotte, .mayotte): return true
-        case (.burkinaFaso, .burkinaFaso): return true
-        case (.aruba, .aruba): return true
-        case (.taiwan, .taiwan): return true
-        case (.zimbabwe, .zimbabwe): return true
-        case (.poland, .poland): return true
-        case (.westernSahara, .westernSahara): return true
-        case (.algeria, .algeria): return true
-        case (.nigeria, .nigeria): return true
-        case (.malta, .malta): return true
-        case (.timorLeste, .timorLeste): return true
-        case (.drc, .drc): return true
-        case (.lithuania, .lithuania): return true
-        case (.bermuda, .bermuda): return true
-        case (.cyprus, .cyprus): return true
-        case (.jamaica, .jamaica): return true
-        case (.mauritania, .mauritania): return true
-        case (.senegal, .senegal): return true
-        case (.caboVerde, .caboVerde): return true
-        case (.tajikistan, .tajikistan): return true
-        case (.usa, .usa): return true
-        case (.moldova, .moldova): return true
-        case (.reunion, .reunion): return true
-        case (.namibia, .namibia): return true
-        case (.eritrea, .eritrea): return true
-        case (.saintVincentAndTheGrenadines, .saintVincentAndTheGrenadines): return true
-        case (.italy, .italy): return true
-        case (.congo, .congo): return true
-        case (.china, .china): return true
-        case (.southAfrica, .southAfrica): return true
-        case (.iceland, .iceland): return true
-        case (.lebanon, .lebanon): return true
-        case (.kenya, .kenya): return true
-        case (.uruguay, .uruguay): return true
         case (.mongolia, .mongolia): return true
-        case (.tanzania, .tanzania): return true
-        case (.albania, .albania): return true
-        case (.austria, .austria): return true
-        case (.macedonia, .macedonia): return true
-        case (.guadeloupe, .guadeloupe): return true
-        case (.costaRica, .costaRica): return true
+        case (.syrianArabRepublic, .syrianArabRepublic): return true
+        case (.msZaandam, .msZaandam): return true
+        case (.denmark, .denmark): return true
+        case (.bosnia, .bosnia): return true
+        case (.honduras, .honduras): return true
+        case (.vanuatu, .vanuatu): return true
+        case (.monaco, .monaco): return true
+        case (.romania, .romania): return true
+        case (.southSudan, .southSudan): return true
+        case (.palestine, .palestine): return true
+        case (.comoros, .comoros): return true
+        case (.zimbabwe, .zimbabwe): return true
+        case (.newCaledonia, .newCaledonia): return true
+        case (.caymanIslands, .caymanIslands): return true
+        case (.australia, .australia): return true
+        case (.azerbaijan, .azerbaijan): return true
+        case (.centralAfricanRepublic, .centralAfricanRepublic): return true
+        case (.fiji, .fiji): return true
+        case (.nepal, .nepal): return true
+        case (.tunisia, .tunisia): return true
+        case (.hongKong, .hongKong): return true
+        case (.haiti, .haiti): return true
+        case (.bahamas, .bahamas): return true
+        case (.timorLeste, .timorLeste): return true
         case (.newZealand, .newZealand): return true
-        case (.mexico, .mexico): return true
-        case (.stBarth, .stBarth): return true
-        case (.saintLucia, .saintLucia): return true
-        case (.rwanda, .rwanda): return true
-        case (.venezuela, .venezuela): return true
-        case (.croatia, .croatia): return true
-        case (.saudiArabia, .saudiArabia): return true
-        case (.marshallIslands, .marshallIslands): return true
-        case (.diamondPrincess, .diamondPrincess): return true
-        case (.peru, .peru): return true
-        case (.ukraine, .ukraine): return true
+        case (.ireland, .ireland): return true
+        case (.brazil, .brazil): return true
+        case (.antiguaAndBarbuda, .antiguaAndBarbuda): return true
+        case (.somalia, .somalia): return true
+        case (.britishVirginIslands, .britishVirginIslands): return true
+        case (.jordan, .jordan): return true
+        case (.barbados, .barbados): return true
+        case (.montserrat, .montserrat): return true
+        case (.vietnam, .vietnam): return true
+        case (.uganda, .uganda): return true
+        case (.andorra, .andorra): return true
+        case (.tajikistan, .tajikistan): return true
         case (.maldives, .maldives): return true
-        case (.madagascar, .madagascar): return true
+        case (.panama, .panama): return true
+        case (.morocco, .morocco): return true
+        case (.faroeIslands, .faroeIslands): return true
+        case (.isleOfMan, .isleOfMan): return true
+        case (.egypt, .egypt): return true
+        case (.belize, .belize): return true
+        case (.benin, .benin): return true
+        case (.lebanon, .lebanon): return true
+        case (.poland, .poland): return true
+        case (.gabon, .gabon): return true
+        case (.kuwait, .kuwait): return true
+        case (.stBarth, .stBarth): return true
+        case (.bolivia, .bolivia): return true
+        case (.diamondPrincess, .diamondPrincess): return true
+        case (.china, .china): return true
+        case (.algeria, .algeria): return true
+        case (.turkey, .turkey): return true
+        case (.finland, .finland): return true
+        case (.ghana, .ghana): return true
+        case (.micronesia, .micronesia): return true
+        case (.gambia, .gambia): return true
+        case (.moldova, .moldova): return true
+        case (.suriname, .suriname): return true
+        case (.oman, .oman): return true
+        case (.bulgaria, .bulgaria): return true
+        case (.gibraltar, .gibraltar): return true
+        case (.greenland, .greenland): return true
+        case (.bermuda, .bermuda): return true
+        case (.indonesia, .indonesia): return true
+        case (.drc, .drc): return true
+        case (.grenada, .grenada): return true
+        case (.costaRica, .costaRica): return true
+        case (.kenya, .kenya): return true
+        case (.mozambique, .mozambique): return true
+        case (.singapore, .singapore): return true
+        case (.ukraine, .ukraine): return true
+        case (.argentina, .argentina): return true
+        case (.holySeeVaticanCityState, .holySeeVaticanCityState): return true
+        case (.afghanistan, .afghanistan): return true
+        case (.saudiArabia, .saudiArabia): return true
+        case (.macedonia, .macedonia): return true
+        case (.libyanArabJamahiriya, .libyanArabJamahiriya): return true
+        case (.spain, .spain): return true
+        case (.malawi, .malawi): return true
+        case (.saintKittsAndNevis, .saintKittsAndNevis): return true
+        case (.italy, .italy): return true
+        case (.namibia, .namibia): return true
+        case (.uzbekistan, .uzbekistan): return true
+        case (.ethiopia, .ethiopia): return true
+        case (.paraguay, .paraguay): return true
+        case (.samoa, .samoa): return true
+        case (.qatar, .qatar): return true
+        case (.lesotho, .lesotho): return true
+        case (.dominica, .dominica): return true
+        case (.falklandIslandsMalvinas, .falklandIslandsMalvinas): return true
+        case (.guinea, .guinea): return true
+        case (.cambodia, .cambodia): return true
+        case (.india, .india): return true
+        case (.georgia, .georgia): return true
+        case (.france, .france): return true
+        case (.latvia, .latvia): return true
+        case (.mauritania, .mauritania): return true
+        case (.mauritius, .mauritius): return true
+        case (.jamaica, .jamaica): return true
+        case (.uk, .uk): return true
+        case (.nigeria, .nigeria): return true
+        case (.uruguay, .uruguay): return true
+        case (.dominicanRepublic, .dominicanRepublic): return true
+        case (.israel, .israel): return true
+        case (.trinidadAndTobago, .trinidadAndTobago): return true
+        case (.japan, .japan): return true
+        case (.guyana, .guyana): return true
+        case (.angola, .angola): return true
+        case (.turksAndCaicosIslands, .turksAndCaicosIslands): return true
+        case (.djibouti, .djibouti): return true
+        case (.saoTomeAndPrincipe, .saoTomeAndPrincipe): return true
+        case (.belarus, .belarus): return true
+        case (.anguilla, .anguilla): return true
+        case (.lithuania, .lithuania): return true
+        case (.chad, .chad): return true
+        case (.liechtenstein, .liechtenstein): return true
+        case (.seychelles, .seychelles): return true
+        case (.cameroon, .cameroon): return true
+        case (.frenchPolynesia, .frenchPolynesia): return true
+        case (.switzerland, .switzerland): return true
+        case (.iraq, .iraq): return true
+        case (.eritrea, .eritrea): return true
+        case (.saintPierreMiquelon, .saintPierreMiquelon): return true
+        case (.serbia, .serbia): return true
+        case (.aruba, .aruba): return true
+        case (.portugal, .portugal): return true
         case (.laoPeopleSDemocraticRepublic, .laoPeopleSDemocraticRepublic): return true
         case (.belgium, .belgium): return true
-        case (.caymanIslands, .caymanIslands): return true
-        case (.ethiopia, .ethiopia): return true
-        case (.mali, .mali): return true
-        case (.armenia, .armenia): return true
-        case (.hongKong, .hongKong): return true
+        case (.estonia, .estonia): return true
+        case (.marshallIslands, .marshallIslands): return true
+        case (.cuba, .cuba): return true
+        case (.montenegro, .montenegro): return true
+        case (.westernSahara, .westernSahara): return true
+        case (.bahrain, .bahrain): return true
+        case (.elSalvador, .elSalvador): return true
+        case (.mayotte, .mayotte): return true
+        case (.czechia, .czechia): return true
+        case (.malaysia, .malaysia): return true
+        case (.wallisAndFutuna, .wallisAndFutuna): return true
+        case (.iran, .iran): return true
+        case (.slovenia, .slovenia): return true
+        case (.croatia, .croatia): return true
+        case (.sudan, .sudan): return true
+        case (.slovakia, .slovakia): return true
+        case (.caribbeanNetherlands, .caribbeanNetherlands): return true
+        case (.nicaragua, .nicaragua): return true
+        case (.sanMarino, .sanMarino): return true
+        case (.sweden, .sweden): return true
+        case (.madagascar, .madagascar): return true
+        case (.uae, .uae): return true
+        case (.norway, .norway): return true
+        case (.cyprus, .cyprus): return true
+        case (.colombia, .colombia): return true
+        case (.saintLucia, .saintLucia): return true
+        case (.sriLanka, .sriLanka): return true
+        case (.curacao, .curacao): return true
+        case (.reunion, .reunion): return true
+        case (.bangladesh, .bangladesh): return true
+        case (.saintVincentAndTheGrenadines, .saintVincentAndTheGrenadines): return true
+        case (.chile, .chile): return true
+        case (.solomonIslands, .solomonIslands): return true
+        case (.netherlands, .netherlands): return true
+        case (.myanmar, .myanmar): return true
+        case (.russia, .russia): return true
+        case (.guadeloupe, .guadeloupe): return true
+        case (.malta, .malta): return true
+        case (.pakistan, .pakistan): return true
+        case (.caboVerde, .caboVerde): return true
+        case (.thailand, .thailand): return true
+        case (.papuaNewGuinea, .papuaNewGuinea): return true
+        case (.canada, .canada): return true
+        case (.macao, .macao): return true
+        case (.senegal, .senegal): return true
+        case (.germany, .germany): return true
+        case (.guatemala, .guatemala): return true
+        case (.burkinaFaso, .burkinaFaso): return true
+        case (.mexico, .mexico): return true
         case (.togo, .togo): return true
+        case (.armenia, .armenia): return true
+        case (.kyrgyzstan, .kyrgyzstan): return true
+        case (.brunei, .brunei): return true
+        case (.philippines, .philippines): return true
+        case (.iceland, .iceland): return true
+        case (.venezuela, .venezuela): return true
+        case (.frenchGuiana, .frenchGuiana): return true
+        case (.peru, .peru): return true
+        case (.taiwan, .taiwan): return true
+        case (.saintMartin, .saintMartin): return true
+        case (.congo, .congo): return true
+        case (.tanzania, .tanzania): return true
+        case (.zambia, .zambia): return true
+        case (.albania, .albania): return true
+        case (.guineaBissau, .guineaBissau): return true
+        case (.channelIslands, .channelIslands): return true
+        case (.burundi, .burundi): return true
+        case (.mali, .mali): return true
+        case (.bhutan, .bhutan): return true
+        case (.yemen, .yemen): return true
+        case (.sintMaarten, .sintMaarten): return true
+        case (.luxembourg, .luxembourg): return true
+        case (.usa, .usa): return true
+        case (.rwanda, .rwanda): return true
+        case (.southAfrica, .southAfrica): return true
+        case (.greece, .greece): return true
+        case (.hungary, .hungary): return true
+        case (.botswana, .botswana): return true
+        case (.swaziland, .swaziland): return true
+        case (.ecuador, .ecuador): return true
+        case (.liberia, .liberia): return true
+        case (.austria, .austria): return true
+        case (.equatorialGuinea, .equatorialGuinea): return true
+        case (.martinique, .martinique): return true
+        case (.kazakhstan, .kazakhstan): return true
+        case (.niger, .niger): return true
+        case (.sierraLeone, .sierraLeone): return true
+        case (.coteDIvoire, .coteDIvoire): return true
         case (.__unknown(let lhsValue), .__unknown(let rhsValue)): return lhsValue == rhsValue
         default: return false
       }
@@ -4096,227 +4096,227 @@ public enum ApolloCovid {
 
     public static var allCases: [CountryIdentifier] {
       return [
-        .haiti,
-        .solomonIslands,
-        .libyanArabJamahiriya,
-        .centralAfricanRepublic,
-        .wallisAndFutuna,
-        .egypt,
-        .frenchPolynesia,
-        .equatorialGuinea,
-        .curacao,
-        .samoa,
-        .honduras,
-        .mozambique,
-        .msZaandam,
-        .slovenia,
-        .bhutan,
-        .morocco,
-        .bulgaria,
-        .sanMarino,
-        .guinea,
-        .iran,
-        .burundi,
-        .lesotho,
-        .mauritius,
-        .ireland,
-        .papuaNewGuinea,
-        .swaziland,
-        .saintKittsAndNevis,
-        .seychelles,
-        .japan,
-        .vanuatu,
-        .uk,
-        .thailand,
-        .nepal,
-        .sriLanka,
-        .barbados,
-        .syrianArabRepublic,
-        .nicaragua,
-        .chile,
-        .australia,
-        .andorra,
-        .bangladesh,
-        .saoTomeAndPrincipe,
-        .estonia,
-        .uae,
-        .norway,
-        .philippines,
-        .macao,
-        .fiji,
-        .russia,
-        .panama,
-        .myanmar,
-        .kyrgyzstan,
-        .singapore,
-        .malaysia,
-        .elSalvador,
-        .iraq,
-        .anguilla,
-        .newCaledonia,
-        .frenchGuiana,
-        .niger,
-        .dominica,
-        .belize,
-        .georgia,
-        .bahamas,
-        .sweden,
-        .liberia,
-        .ecuador,
-        .indonesia,
-        .saintPierreMiquelon,
-        .brazil,
-        .tunisia,
-        .ghana,
-        .india,
-        .gambia,
-        .qatar,
-        .trinidadAndTobago,
-        .djibouti,
-        .turkey,
-        .liechtenstein,
-        .grenada,
-        .britishVirginIslands,
-        .comoros,
-        .cameroon,
-        .azerbaijan,
-        .southSudan,
-        .kazakhstan,
-        .falklandIslandsMalvinas,
-        .belarus,
-        .greenland,
-        .botswana,
-        .israel,
-        .malawi,
-        .micronesia,
-        .spain,
-        .hungary,
-        .uzbekistan,
-        .guineaBissau,
-        .germany,
-        .guyana,
-        .bolivia,
-        .gabon,
-        .finland,
-        .canada,
-        .afghanistan,
-        .saintMartin,
-        .sierraLeone,
-        .slovakia,
-        .chad,
-        .turksAndCaicosIslands,
-        .argentina,
-        .gibraltar,
-        .latvia,
-        .netherlands,
-        .serbia,
-        .caribbeanNetherlands,
-        .coteDIvoire,
-        .somalia,
-        .luxembourg,
-        .holySeeVaticanCityState,
-        .pakistan,
-        .cuba,
-        .vietnam,
-        .bahrain,
-        .greece,
-        .antiguaAndBarbuda,
-        .paraguay,
-        .martinique,
-        .jordan,
-        .faroeIslands,
-        .montserrat,
-        .czechia,
-        .brunei,
-        .kuwait,
-        .zambia,
-        .montenegro,
-        .sudan,
-        .suriname,
-        .isleOfMan,
-        .switzerland,
-        .cambodia,
-        .france,
-        .angola,
         .sKorea,
-        .benin,
-        .portugal,
-        .oman,
-        .denmark,
-        .palestine,
-        .dominicanRepublic,
-        .uganda,
-        .bosnia,
-        .sintMaarten,
-        .romania,
-        .colombia,
-        .yemen,
-        .monaco,
-        .guatemala,
-        .channelIslands,
-        .mayotte,
-        .burkinaFaso,
-        .aruba,
-        .taiwan,
-        .zimbabwe,
-        .poland,
-        .westernSahara,
-        .algeria,
-        .nigeria,
-        .malta,
-        .timorLeste,
-        .drc,
-        .lithuania,
-        .bermuda,
-        .cyprus,
-        .jamaica,
-        .mauritania,
-        .senegal,
-        .caboVerde,
-        .tajikistan,
-        .usa,
-        .moldova,
-        .reunion,
-        .namibia,
-        .eritrea,
-        .saintVincentAndTheGrenadines,
-        .italy,
-        .congo,
-        .china,
-        .southAfrica,
-        .iceland,
-        .lebanon,
-        .kenya,
-        .uruguay,
         .mongolia,
-        .tanzania,
-        .albania,
-        .austria,
-        .macedonia,
-        .guadeloupe,
-        .costaRica,
+        .syrianArabRepublic,
+        .msZaandam,
+        .denmark,
+        .bosnia,
+        .honduras,
+        .vanuatu,
+        .monaco,
+        .romania,
+        .southSudan,
+        .palestine,
+        .comoros,
+        .zimbabwe,
+        .newCaledonia,
+        .caymanIslands,
+        .australia,
+        .azerbaijan,
+        .centralAfricanRepublic,
+        .fiji,
+        .nepal,
+        .tunisia,
+        .hongKong,
+        .haiti,
+        .bahamas,
+        .timorLeste,
         .newZealand,
-        .mexico,
-        .stBarth,
-        .saintLucia,
-        .rwanda,
-        .venezuela,
-        .croatia,
-        .saudiArabia,
-        .marshallIslands,
-        .diamondPrincess,
-        .peru,
-        .ukraine,
+        .ireland,
+        .brazil,
+        .antiguaAndBarbuda,
+        .somalia,
+        .britishVirginIslands,
+        .jordan,
+        .barbados,
+        .montserrat,
+        .vietnam,
+        .uganda,
+        .andorra,
+        .tajikistan,
         .maldives,
-        .madagascar,
+        .panama,
+        .morocco,
+        .faroeIslands,
+        .isleOfMan,
+        .egypt,
+        .belize,
+        .benin,
+        .lebanon,
+        .poland,
+        .gabon,
+        .kuwait,
+        .stBarth,
+        .bolivia,
+        .diamondPrincess,
+        .china,
+        .algeria,
+        .turkey,
+        .finland,
+        .ghana,
+        .micronesia,
+        .gambia,
+        .moldova,
+        .suriname,
+        .oman,
+        .bulgaria,
+        .gibraltar,
+        .greenland,
+        .bermuda,
+        .indonesia,
+        .drc,
+        .grenada,
+        .costaRica,
+        .kenya,
+        .mozambique,
+        .singapore,
+        .ukraine,
+        .argentina,
+        .holySeeVaticanCityState,
+        .afghanistan,
+        .saudiArabia,
+        .macedonia,
+        .libyanArabJamahiriya,
+        .spain,
+        .malawi,
+        .saintKittsAndNevis,
+        .italy,
+        .namibia,
+        .uzbekistan,
+        .ethiopia,
+        .paraguay,
+        .samoa,
+        .qatar,
+        .lesotho,
+        .dominica,
+        .falklandIslandsMalvinas,
+        .guinea,
+        .cambodia,
+        .india,
+        .georgia,
+        .france,
+        .latvia,
+        .mauritania,
+        .mauritius,
+        .jamaica,
+        .uk,
+        .nigeria,
+        .uruguay,
+        .dominicanRepublic,
+        .israel,
+        .trinidadAndTobago,
+        .japan,
+        .guyana,
+        .angola,
+        .turksAndCaicosIslands,
+        .djibouti,
+        .saoTomeAndPrincipe,
+        .belarus,
+        .anguilla,
+        .lithuania,
+        .chad,
+        .liechtenstein,
+        .seychelles,
+        .cameroon,
+        .frenchPolynesia,
+        .switzerland,
+        .iraq,
+        .eritrea,
+        .saintPierreMiquelon,
+        .serbia,
+        .aruba,
+        .portugal,
         .laoPeopleSDemocraticRepublic,
         .belgium,
-        .caymanIslands,
-        .ethiopia,
-        .mali,
-        .armenia,
-        .hongKong,
+        .estonia,
+        .marshallIslands,
+        .cuba,
+        .montenegro,
+        .westernSahara,
+        .bahrain,
+        .elSalvador,
+        .mayotte,
+        .czechia,
+        .malaysia,
+        .wallisAndFutuna,
+        .iran,
+        .slovenia,
+        .croatia,
+        .sudan,
+        .slovakia,
+        .caribbeanNetherlands,
+        .nicaragua,
+        .sanMarino,
+        .sweden,
+        .madagascar,
+        .uae,
+        .norway,
+        .cyprus,
+        .colombia,
+        .saintLucia,
+        .sriLanka,
+        .curacao,
+        .reunion,
+        .bangladesh,
+        .saintVincentAndTheGrenadines,
+        .chile,
+        .solomonIslands,
+        .netherlands,
+        .myanmar,
+        .russia,
+        .guadeloupe,
+        .malta,
+        .pakistan,
+        .caboVerde,
+        .thailand,
+        .papuaNewGuinea,
+        .canada,
+        .macao,
+        .senegal,
+        .germany,
+        .guatemala,
+        .burkinaFaso,
+        .mexico,
         .togo,
+        .armenia,
+        .kyrgyzstan,
+        .brunei,
+        .philippines,
+        .iceland,
+        .venezuela,
+        .frenchGuiana,
+        .peru,
+        .taiwan,
+        .saintMartin,
+        .congo,
+        .tanzania,
+        .zambia,
+        .albania,
+        .guineaBissau,
+        .channelIslands,
+        .burundi,
+        .mali,
+        .bhutan,
+        .yemen,
+        .sintMaarten,
+        .luxembourg,
+        .usa,
+        .rwanda,
+        .southAfrica,
+        .greece,
+        .hungary,
+        .botswana,
+        .swaziland,
+        .ecuador,
+        .liberia,
+        .austria,
+        .equatorialGuinea,
+        .martinique,
+        .kazakhstan,
+        .niger,
+        .sierraLeone,
+        .coteDIvoire,
       ]
     }
   }
@@ -4325,7 +4325,7 @@ public enum ApolloCovid {
     /// The raw GraphQL definition of this operation.
     public let operationDefinition: String =
       """
-      query ContentViewCountriesCountryConnectionBasicCountryCellCountry($before: String, $first: Int, $last: Int, $after: String) {
+      query ContentViewCountriesCountryConnectionBasicCountryCellCountry($after: String, $before: String, $first: Int, $last: Int) {
         countries(after: $after, before: $before, first: $first, last: $last) {
           __typename
           ...CountryConnectionBasicCountryCellCountry
@@ -4335,27 +4335,22 @@ public enum ApolloCovid {
 
     public let operationName: String = "ContentViewCountriesCountryConnectionBasicCountryCellCountry"
 
-    public var queryDocument: String {
-      var document: String = operationDefinition
-      document.append("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition)
-      document.append("\n" + BasicCountryCellCountry.fragmentDefinition)
-      return document
-    }
+    public var queryDocument: String { return operationDefinition.appending(CountryConnectionBasicCountryCellCountry.fragmentDefinition).appending(BasicCountryCellCountry.fragmentDefinition) }
 
+    public var after: String?
     public var before: String?
     public var first: Int?
     public var last: Int?
-    public var after: String?
 
-    public init(before: String? = nil, first: Int? = nil, last: Int? = nil, after: String? = nil) {
+    public init(after: String? = nil, before: String? = nil, first: Int? = nil, last: Int? = nil) {
+      self.after = after
       self.before = before
       self.first = first
       self.last = last
-      self.after = after
     }
 
     public var variables: GraphQLMap? {
-      return ["before": before, "first": first, "last": last, "after": after]
+      return ["after": after, "before": before, "first": first, "last": last]
     }
 
     public struct Data: GraphQLSelectionSet {
@@ -4490,12 +4485,7 @@ public enum ApolloCovid {
 
     public let operationName: String = "CountryDetailView"
 
-    public var queryDocument: String {
-      var document: String = operationDefinition
-      document.append("\n" + StatsViewIAffected.fragmentDefinition)
-      document.append("\n" + NewsStoryCellNewsStory.fragmentDefinition)
-      return document
-    }
+    public var queryDocument: String { return operationDefinition.appending(StatsViewIAffected.fragmentDefinition).appending(NewsStoryCellNewsStory.fragmentDefinition) }
 
     public var identifier: CountryIdentifier
     public var numberOfPoints: Int
@@ -5049,7 +5039,7 @@ public enum ApolloCovid {
     /// The raw GraphQL definition of this operation.
     public let operationDefinition: String =
       """
-      query ContentView($before: String, $first: Int, $last: Int, $after: String, $numberOfPoints: Int!) {
+      query ContentView($after: String, $before: String, $first: Int, $last: Int, $numberOfPoints: Int!) {
         countries(after: $after, before: $before, first: $first, last: $last) {
           __typename
           ...CountryConnectionBasicCountryCellCountry
@@ -5110,36 +5100,24 @@ public enum ApolloCovid {
 
     public let operationName: String = "ContentView"
 
-    public var queryDocument: String {
-      var document: String = operationDefinition
-      document.append("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition)
-      document.append("\n" + BasicCountryCellCountry.fragmentDefinition)
-      document.append("\n" + CountryMapPinCountry.fragmentDefinition)
-      document.append("\n" + MultiPolygonMultiPolygon.fragmentDefinition)
-      document.append("\n" + PolygonPolygon.fragmentDefinition)
-      document.append("\n" + CoordinatesCoordinates.fragmentDefinition)
-      document.append("\n" + StatsViewIAffected.fragmentDefinition)
-      document.append("\n" + NewsStoryCellNewsStory.fragmentDefinition)
-      document.append("\n" + CurrentStateCellWorld.fragmentDefinition)
-      return document
-    }
+    public var queryDocument: String { return operationDefinition.appending(CountryConnectionBasicCountryCellCountry.fragmentDefinition).appending(BasicCountryCellCountry.fragmentDefinition).appending(CountryMapPinCountry.fragmentDefinition).appending(MultiPolygonMultiPolygon.fragmentDefinition).appending(PolygonPolygon.fragmentDefinition).appending(CoordinatesCoordinates.fragmentDefinition).appending(StatsViewIAffected.fragmentDefinition).appending(NewsStoryCellNewsStory.fragmentDefinition).appending(CurrentStateCellWorld.fragmentDefinition) }
 
+    public var after: String?
     public var before: String?
     public var first: Int?
     public var last: Int?
-    public var after: String?
     public var numberOfPoints: Int
 
-    public init(before: String? = nil, first: Int? = nil, last: Int? = nil, after: String? = nil, numberOfPoints: Int) {
+    public init(after: String? = nil, before: String? = nil, first: Int? = nil, last: Int? = nil, numberOfPoints: Int) {
+      self.after = after
       self.before = before
       self.first = first
       self.last = last
-      self.after = after
       self.numberOfPoints = numberOfPoints
     }
 
     public var variables: GraphQLMap? {
-      return ["before": before, "first": first, "last": last, "after": after, "numberOfPoints": numberOfPoints]
+      return ["after": after, "before": before, "first": first, "last": last, "numberOfPoints": numberOfPoints]
     }
 
     public struct Data: GraphQLSelectionSet {
@@ -6931,7 +6909,7 @@ public enum ApolloCovid {
       }
       """
 
-    public static let possibleTypes: [String] = ["Affected", "Continent", "Country", "DetailedAffected", "DetailedContinent", "World"]
+    public static let possibleTypes: [String] = ["DetailedContinent", "Country", "World", "Affected", "Continent", "DetailedAffected"]
 
     public static var selections: [GraphQLSelection] {
       return [
@@ -6948,6 +6926,18 @@ public enum ApolloCovid {
       self.resultMap = unsafeResultMap
     }
 
+    public static func makeDetailedContinent(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "DetailedContinent", "cases": cases, "deaths": deaths, "recovered": recovered])
+    }
+
+    public static func makeCountry(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "Country", "cases": cases, "deaths": deaths, "recovered": recovered])
+    }
+
+    public static func makeWorld(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "World", "cases": cases, "deaths": deaths, "recovered": recovered])
+    }
+
     public static func makeAffected(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
       return StatsViewIAffected(unsafeResultMap: ["__typename": "Affected", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
@@ -6956,20 +6946,8 @@ public enum ApolloCovid {
       return StatsViewIAffected(unsafeResultMap: ["__typename": "Continent", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func makeCountry(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
-      return StatsViewIAffected(unsafeResultMap: ["__typename": "Country", "cases": cases, "deaths": deaths, "recovered": recovered])
-    }
-
     public static func makeDetailedAffected(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
       return StatsViewIAffected(unsafeResultMap: ["__typename": "DetailedAffected", "cases": cases, "deaths": deaths, "recovered": recovered])
-    }
-
-    public static func makeDetailedContinent(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
-      return StatsViewIAffected(unsafeResultMap: ["__typename": "DetailedContinent", "cases": cases, "deaths": deaths, "recovered": recovered])
-    }
-
-    public static func makeWorld(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
-      return StatsViewIAffected(unsafeResultMap: ["__typename": "World", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
     public var __typename: String {

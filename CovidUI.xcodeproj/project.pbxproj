@@ -34,8 +34,8 @@
 		0ECA6EE525BEE0EF00F99ADA /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = 0ECA6EE425BEE0EF00F99ADA /* swiftgen.yml */; };
 		0ECA6EE925BEE43A00F99ADA /* Languages.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0ECA6EE825BEE43A00F99ADA /* Languages.strings */; };
 		8729994F126CC2AD4E24E708 /* Graphaello.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2F68FB97F5367A6D95789C /* Graphaello.swift */; };
-		8FE9A71E3BFF451C0ADF50BD /* Covid.graphql.json in Sources */ = {isa = PBXBuildFile; fileRef = ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */; };
 		B88C67CDA88E541EE7D8E46C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 809A06EB356EA8910AEB4246 /* Apollo */; };
+		C9B6AB1A5B21069C497359CA /* Covid.graphql.json in Resources */ = {isa = PBXBuildFile; fileRef = 07E8A0A564B821E29E5840FA /* Covid.graphql.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,12 +59,12 @@
 		06E4DF7C24375BDE00092990 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		06E4DF7E24376AB300092990 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		06E4DF802437A41700092990 /* CountryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryDetailView.swift; sourceTree = "<group>"; };
+		07E8A0A564B821E29E5840FA /* Covid.graphql.json */ = {isa = PBXFileReference; explicitFileType = text.json; lastKnownFileType = text.json; name = Covid.graphql.json; path = Covid.graphql.json; sourceTree = "<group>"; };
 		0ECA6EDA25BEDFA200F99ADA /* Languages.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; path = Languages.stringsdict; sourceTree = "<group>"; };
 		0ECA6EE125BEE0E600F99ADA /* Strings+Generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Strings+Generated.swift"; sourceTree = "<group>"; };
 		0ECA6EE425BEE0EF00F99ADA /* swiftgen.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 		0ECA6EE825BEE43A00F99ADA /* Languages.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Languages.strings; sourceTree = "<group>"; };
 		7C2F68FB97F5367A6D95789C /* Graphaello.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Graphaello.swift; sourceTree = "<group>"; };
-		ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = Covid.graphql.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,7 +93,7 @@
 				0ECA6EE825BEE43A00F99ADA /* Languages.strings */,
 				0ECA6EE125BEE0E600F99ADA /* Strings+Generated.swift */,
 				0ECA6EDA25BEDFA200F99ADA /* Languages.stringsdict */,
-				ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */,
+				07E8A0A564B821E29E5840FA /* Covid.graphql.json */,
 			);
 			sourceTree = "<group>";
 		};
@@ -175,7 +175,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1140;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = Mathias.Quintero;
 				TargetAttributes = {
 					06E4DF442434A5FE00092990 = {
@@ -219,6 +219,7 @@
 				06E4DF4F2434A60000092990 /* Assets.xcassets in Resources */,
 				0ECA6EE525BEE0EF00F99ADA /* swiftgen.yml in Resources */,
 				0ECA6EE925BEE43A00F99ADA /* Languages.strings in Resources */,
+				C9B6AB1A5B21069C497359CA /* Covid.graphql.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,7 +278,6 @@
 				06E4DF7D24375BDE00092990 /* MapView.swift in Sources */,
 				06E4DF4D2434A5FE00092990 /* ContentView.swift in Sources */,
 				8729994F126CC2AD4E24E708 /* Graphaello.swift in Sources */,
-				8FE9A71E3BFF451C0ADF50BD /* Covid.graphql.json in Sources */,
 				06E4DF6C2434D3E300092990 /* BasicCountryCell.swift in Sources */,
 				06E4DF702434DDA300092990 /* NeumorphicCard.swift in Sources */,
 				06E4DF6A2434CF7800092990 /* CurrentStateCell.swift in Sources */,
@@ -325,6 +325,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -385,6 +386,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
