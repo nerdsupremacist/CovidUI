@@ -18,7 +18,6 @@
 		06E4DF602434A73C00092990 /* FeaturedCountryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */; };
 		06E4DF632434A77300092990 /* FancyScrollView in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF622434A77300092990 /* FancyScrollView */; };
 		06E4DF662434A7B800092990 /* SwiftUICharts in Frameworks */ = {isa = PBXBuildFile; productRef = 06E4DF652434A7B800092990 /* SwiftUICharts */; };
-		06E4DF682434A8E600092990 /* emoji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF672434A8E600092990 /* emoji.swift */; };
 		06E4DF6A2434CF7800092990 /* CurrentStateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF692434CF7800092990 /* CurrentStateCell.swift */; };
 		06E4DF6C2434D3E300092990 /* BasicCountryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF6B2434D3E300092990 /* BasicCountryCell.swift */; };
 		06E4DF6E2434DD2F00092990 /* Neumorphic+init.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */; };
@@ -30,6 +29,10 @@
 		06E4DF7D24375BDE00092990 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF7C24375BDE00092990 /* MapView.swift */; };
 		06E4DF7F24376AB300092990 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF7E24376AB300092990 /* WebView.swift */; };
 		06E4DF812437A41700092990 /* CountryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E4DF802437A41700092990 /* CountryDetailView.swift */; };
+		0ECA6EDB25BEDFA200F99ADA /* Languages.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 0ECA6EDA25BEDFA200F99ADA /* Languages.stringsdict */; };
+		0ECA6EE225BEE0E600F99ADA /* Strings+Generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ECA6EE125BEE0E600F99ADA /* Strings+Generated.swift */; };
+		0ECA6EE525BEE0EF00F99ADA /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = 0ECA6EE425BEE0EF00F99ADA /* swiftgen.yml */; };
+		0ECA6EE925BEE43A00F99ADA /* Languages.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0ECA6EE825BEE43A00F99ADA /* Languages.strings */; };
 		8729994F126CC2AD4E24E708 /* Graphaello.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2F68FB97F5367A6D95789C /* Graphaello.swift */; };
 		8FE9A71E3BFF451C0ADF50BD /* Covid.graphql.json in Sources */ = {isa = PBXBuildFile; fileRef = ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */; };
 		B88C67CDA88E541EE7D8E46C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 809A06EB356EA8910AEB4246 /* Apollo */; };
@@ -46,7 +49,6 @@
 		06E4DF542434A60000092990 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		06E4DF562434A60000092990 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturedCountryCell.swift; sourceTree = "<group>"; };
-		06E4DF672434A8E600092990 /* emoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = emoji.swift; sourceTree = "<group>"; };
 		06E4DF692434CF7800092990 /* CurrentStateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStateCell.swift; sourceTree = "<group>"; };
 		06E4DF6B2434D3E300092990 /* BasicCountryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicCountryCell.swift; sourceTree = "<group>"; };
 		06E4DF6D2434DD2F00092990 /* Neumorphic+init.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Neumorphic+init.swift"; sourceTree = "<group>"; };
@@ -57,6 +59,10 @@
 		06E4DF7C24375BDE00092990 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		06E4DF7E24376AB300092990 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		06E4DF802437A41700092990 /* CountryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryDetailView.swift; sourceTree = "<group>"; };
+		0ECA6EDA25BEDFA200F99ADA /* Languages.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; path = Languages.stringsdict; sourceTree = "<group>"; };
+		0ECA6EE125BEE0E600F99ADA /* Strings+Generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Strings+Generated.swift"; sourceTree = "<group>"; };
+		0ECA6EE425BEE0EF00F99ADA /* swiftgen.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
+		0ECA6EE825BEE43A00F99ADA /* Languages.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Languages.strings; sourceTree = "<group>"; };
 		7C2F68FB97F5367A6D95789C /* Graphaello.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Graphaello.swift; sourceTree = "<group>"; };
 		ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = Covid.graphql.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,6 +89,10 @@
 				06E4DF472434A5FE00092990 /* CovidUI */,
 				06E4DF462434A5FE00092990 /* Products */,
 				7C2F68FB97F5367A6D95789C /* Graphaello.swift */,
+				0ECA6EE425BEE0EF00F99ADA /* swiftgen.yml */,
+				0ECA6EE825BEE43A00F99ADA /* Languages.strings */,
+				0ECA6EE125BEE0E600F99ADA /* Strings+Generated.swift */,
+				0ECA6EDA25BEDFA200F99ADA /* Languages.stringsdict */,
 				ECD380E0782580B7F0AA76E8 /* Covid.graphql.json */,
 			);
 			sourceTree = "<group>";
@@ -103,7 +113,6 @@
 				06E4DF5F2434A73C00092990 /* FeaturedCountryCell.swift */,
 				06E4DF692434CF7800092990 /* CurrentStateCell.swift */,
 				06E4DF73243666D600092990 /* NewsStoryCell.swift */,
-				06E4DF672434A8E600092990 /* emoji.swift */,
 				06E4DF4C2434A5FE00092990 /* ContentView.swift */,
 				06E4DF7C24375BDE00092990 /* MapView.swift */,
 				06E4DF802437A41700092990 /* CountryDetailView.swift */,
@@ -138,6 +147,7 @@
 			buildConfigurationList = 06E4DF592434A60000092990 /* Build configuration list for PBXNativeTarget "CovidUI" */;
 			buildPhases = (
 				688B767EF72B31B8A5A51D78 /* Graphaello */,
+				0ECA6EDD25BEDFC100F99ADA /* Swift Gen */,
 				06E4DF412434A5FE00092990 /* Sources */,
 				06E4DF422434A5FE00092990 /* Frameworks */,
 				06E4DF432434A5FE00092990 /* Resources */,
@@ -203,15 +213,36 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0ECA6EDB25BEDFA200F99ADA /* Languages.stringsdict in Resources */,
 				06E4DF552434A60000092990 /* LaunchScreen.storyboard in Resources */,
 				06E4DF522434A60000092990 /* Preview Assets.xcassets in Resources */,
 				06E4DF4F2434A60000092990 /* Assets.xcassets in Resources */,
+				0ECA6EE525BEE0EF00F99ADA /* swiftgen.yml in Resources */,
+				0ECA6EE925BEE43A00F99ADA /* Languages.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0ECA6EDD25BEDFC100F99ADA /* Swift Gen */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Swift Gen";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "swiftgen\n";
+		};
 		688B767EF72B31B8A5A51D78 /* Graphaello */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,7 +255,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\n#graphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
+			shellScript = "if ! type \"graphaello\" > /dev/null; then\n  echo \"warning: graphaello is not installed on your machine. Your project won't be updated automatically\"\n  exit 0\nfi\ngraphaello codegen --project $PROJECT_FILE_PATH --apollo derivedData\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -234,11 +265,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				06E4DF812437A41700092990 /* CountryDetailView.swift in Sources */,
+				0ECA6EE225BEE0E600F99ADA /* Strings+Generated.swift in Sources */,
 				06E4DF602434A73C00092990 /* FeaturedCountryCell.swift in Sources */,
 				06E4DF7F24376AB300092990 /* WebView.swift in Sources */,
 				06E4DF7B24375ADD00092990 /* CountryMapPin.swift in Sources */,
 				06E4DF74243666D600092990 /* NewsStoryCell.swift in Sources */,
-				06E4DF682434A8E600092990 /* emoji.swift in Sources */,
 				06E4DF492434A5FE00092990 /* AppDelegate.swift in Sources */,
 				06E4DF6E2434DD2F00092990 /* Neumorphic+init.swift in Sources */,
 				066DB83D244E0346006B692B /* OverallStatsView.swift in Sources */,
@@ -398,7 +429,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "GRAPHAELLO_COVID_UI__TARGET $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) GRAPHAELLO_COVID_UI_TARGET";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -420,7 +451,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.quintero.Covid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) GRAPHAELLO_COVID_UI__TARGET";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "GRAPHAELLO_COVID_UI_TARGET $(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -486,8 +517,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.32.0;
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.40.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -9,11 +9,11 @@ struct CountryDetailView: View {
     @GraphQL(Covid.country.name)
     var name
 
-    @GraphQL(Covid.country.info.iso2)
-    var countryCode
+    @GraphQL(Covid.country.info.emoji)
+    var emoji
 
-    @GraphQL(Covid.country.affected)
-    var affected: StatsView.Affected
+    @GraphQL(Covid.country.iAffected)
+    var affected: StatsView.IAffected
 
     @GraphQL(Covid.country.todayCases)
     var casesToday
@@ -37,7 +37,7 @@ struct CountryDetailView: View {
     var news: [NewsStoryCell.NewsStory]
 
     var title: String {
-        return [countryCode.flatMap(emoji(countryCode:)), name].compactMap { $0 }.joined(separator: " ")
+        return [emoji, name].compactMap { $0 }.joined(separator: " ")
     }
 
     var body: some View {
@@ -57,7 +57,7 @@ struct CountryDetailView: View {
             }) {
                 VStack(alignment: .leading, spacing: 16) {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Today")
+                        Text(L10n.Headline.today)
                             .font(.title)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
@@ -68,7 +68,7 @@ struct CountryDetailView: View {
                             HStack {
                                 Spacer()
                                 VStack {
-                                    Text("Cases").font(.headline).fontWeight(.bold).foregroundColor(.primary)
+                                    Text(L10n.Headline.cases).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                                     Text(casesToday.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
                                 }
 
@@ -77,7 +77,7 @@ struct CountryDetailView: View {
                                 Spacer()
 
                                 VStack {
-                                    Text("Deaths").font(.headline).fontWeight(.bold).foregroundColor(.primary)
+                                    Text(L10n.Headline.deaths).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                                     Text(deathsToday.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
                                 }
                                 Spacer()
@@ -88,7 +88,7 @@ struct CountryDetailView: View {
                         .padding(.horizontal, 16)
                     }
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Total")
+                        Text(L10n.Headline.total)
                             .font(.title)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
@@ -96,7 +96,7 @@ struct CountryDetailView: View {
                             .padding(.top, 16)
 
                         NeumporphicCard {
-                            StatsView(affected: affected)
+                            StatsView(iAffected: affected)
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 24)
                         }
@@ -104,28 +104,43 @@ struct CountryDetailView: View {
                     }
 
                     NeumporphicCard {
-                        LineView(data: casesOverTime.map(Double.init), title: "Cases", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
-                            .frame(height: 340)
-                            .padding([.horizontal, .bottom], 16)
+                        LineView(
+                            data: casesOverTime.map(Double.init),
+                            title: L10n.Headline.cases,
+                            style: ChartStyle.neumorphicColors(),
+                            valueSpecifier: "%.0f"
+                        )
+                        .frame(height: 340)
+                        .padding([.horizontal, .bottom], 16)
                     }
                     .padding(.horizontal, 16)
 
                     NeumporphicCard {
-                        LineView(data: deathsOverTime.map(Double.init), title: "Deaths", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
-                            .frame(height: 340)
-                            .padding([.horizontal, .bottom], 16)
+                        LineView(
+                            data: deathsOverTime.map(Double.init),
+                            title: L10n.Headline.deaths,
+                            style: ChartStyle.neumorphicColors(),
+                            valueSpecifier: "%.0f"
+                        )
+                        .frame(height: 340)
+                        .padding([.horizontal, .bottom], 16)
                     }
                     .padding(.horizontal, 16)
 
                     NeumporphicCard {
-                        LineView(data: recoveredOverTime.map(Double.init), title: "Recovered", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
-                            .frame(height: 340)
-                            .padding([.horizontal, .bottom], 16)
+                        LineView(
+                            data: recoveredOverTime.map(Double.init),
+                            title: L10n.Headline.recovered,
+                            style: ChartStyle.neumorphicColors(),
+                            valueSpecifier: "%.0f"
+                        )
+                        .frame(height: 340)
+                        .padding([.horizontal, .bottom], 16)
                     }
                     .padding(.horizontal, 16)
 
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("News")
+                        Text(L10n.Headline.news)
                             .font(.title)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)

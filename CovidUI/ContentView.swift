@@ -21,12 +21,6 @@ struct ContentView: View {
     @GraphQL(Covid.world.timeline.cases.graph._forEach(\.value))
     var cases
 
-    @GraphQL(Covid.world.timeline.deaths.graph._forEach(\.value))
-    var deaths
-
-    @GraphQL(Covid.world.timeline.recovered.graph._forEach(\.value))
-    var recovered
-
     @GraphQL(Covid.world.news)
     var news: [NewsStoryCell.NewsStory]
 
@@ -44,14 +38,14 @@ struct ContentView: View {
                 FancyScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(alignment: .top) {
-                            Text("Covid-19")
+                            Text(L10n.Headline.disease)
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.primary)
 
                             Spacer()
 
-                            Text("#stayhome")
+                            Text(L10n.hashtag)
                                 .font(.callout)
                                 .fontWeight(.light)
                                 .foregroundColor(.secondary)
@@ -60,7 +54,7 @@ struct ContentView: View {
 
                         currentCountry.map { country in
                             VStack(alignment: .leading) {
-                                Text("For You").font(.title).fontWeight(.medium).foregroundColor(.primary)
+                                Text(L10n.Headline.recommendations).font(.title).fontWeight(.medium).foregroundColor(.primary)
                                 FeaturedCountryCell(api: api, country: country)
                             }
                             .padding(.horizontal, 16)
@@ -68,7 +62,7 @@ struct ContentView: View {
 
                         VStack(alignment: .leading, spacing: 16) {
                             currentCountryName.map { name in
-                                Text("News in \(name)")
+                                Text(L10n.Headline.Country.news(name))
                                     .font(.title)
                                     .fontWeight(.medium)
                                     .foregroundColor(.primary)
@@ -89,7 +83,7 @@ struct ContentView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Around the World")
+                            Text(L10n.Headline.world)
                                 .font(.title)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
@@ -99,15 +93,20 @@ struct ContentView: View {
                                 .padding(.horizontal, 16)
 
                             NeumporphicCard {
-                                LineView(data: cases.map(Double.init), title: "Cases", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f")
-                                    .frame(height: 340)
-                                    .padding([.horizontal, .bottom], 16)
+                                LineView(
+                                    data: cases.map(Double.init),
+                                    title: L10n.Headline.cases,
+                                    style: ChartStyle.neumorphicColors(),
+                                    valueSpecifier: "%.0f"
+                                )
+                                .frame(height: 340)
+                                .padding([.horizontal, .bottom], 16)
                             }
                             .padding(.horizontal, 16)
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("News")
+                            Text(L10n.Headline.news)
                                 .font(.title)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
@@ -125,7 +124,7 @@ struct ContentView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Map")
+                            Text(L10n.Headline.map)
                                 .font(.title)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
@@ -135,7 +134,7 @@ struct ContentView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Countries")
+                            Text(L10n.Headline.countries)
                                 .font(.title)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)

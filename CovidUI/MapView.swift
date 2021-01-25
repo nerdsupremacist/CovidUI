@@ -13,10 +13,14 @@ struct MapView: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-            let circle = MKCircleRenderer(overlay: overlay)
-            circle.strokeColor = UIColor.red
-            circle.fillColor = UIColor(red: 255, green: 0, blue: 0, alpha: 0.3)
-            circle.lineWidth = 1
+            let circle = MKPolygonRenderer(overlay: overlay)
+
+            if let overlay = overlay as? Polygon.MapKitPolygon {
+                let alpha = min(max(CGFloat(overlay.active) / 1_000_000, 0), 1)
+                circle.strokeColor = UIColor(red: 255, green: 0, blue: 0, alpha: alpha)
+                circle.fillColor = UIColor(red: 255, green: 0, blue: 0, alpha: alpha)
+                circle.lineWidth = 1
+            }
             return circle
         }
 
@@ -34,7 +38,7 @@ struct MapView: UIViewRepresentable {
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         mapView.removeOverlays(mapView.overlays)
-        let overlays = pins.compactMap { $0.overlay() }
+        let overlays = pins.flatMap { $0.overlay() }
 
         let important = pins.dropLast(pins.count - 5).compactMap { $0.coordinate() }
         let region = MKCoordinateRegion(from: important)

@@ -41,14 +41,23 @@ protocol Connection: Target {
 
 protocol Fragment {
     associatedtype UnderlyingType
+    static var placeholder: Self { get }
 }
 
 extension Array: Fragment where Element: Fragment {
     typealias UnderlyingType = [Element.UnderlyingType]
+
+    static var placeholder: [Element] {
+        return Array(repeating: Element.placeholder, count: 5)
+    }
 }
 
 extension Optional: Fragment where Wrapped: Fragment {
     typealias UnderlyingType = Wrapped.UnderlyingType?
+
+    static var placeholder: Wrapped? {
+        return Wrapped.placeholder
+    }
 }
 
 protocol Mutation: ObservableObject {
@@ -466,8 +475,8 @@ private struct BasicLoadingView: View {
 struct PagingView<Value: Fragment>: View {
     enum Mode {
         case list
-        case vertical(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil)
-        case horizontal(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil)
+        case vertical(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, insets: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+        case horizontal(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, insets: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     enum Data {
@@ -512,7 +521,7 @@ struct PagingView<Value: Fragment>: View {
                     self.loader(data).onAppear { self.onAppear(data: data) }
                 }
             )
-        case let .vertical(alignment, spacing):
+        case let .vertical(alignment, spacing, insets):
             return AnyView(
                 ScrollView(.horizontal, showsIndicators: false) {
                     VStack(alignment: alignment, spacing: spacing) {
@@ -520,11 +529,12 @@ struct PagingView<Value: Fragment>: View {
                             self.loader(data).ifVisible(in: self.visibleRect, in: .named("InfiniteVerticalScroll")) { self.onAppear(data: data) }
                         }
                     }
+                    .padding(insets)
                 }
                 .coordinateSpace(name: "InfiniteVerticalScroll")
                 .rectReader($visibleRect, in: .named("InfiniteVerticalScroll"))
             )
-        case let .horizontal(alignment, spacing):
+        case let .horizontal(alignment, spacing, insets):
             return AnyView(
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: alignment, spacing: spacing) {
@@ -532,6 +542,7 @@ struct PagingView<Value: Fragment>: View {
                             self.loader(data).ifVisible(in: self.visibleRect, in: .named("InfiniteHorizontalScroll")) { self.onAppear(data: data) }
                         }
                     }
+                    .padding(insets)
                 }
                 .coordinateSpace(name: "InfiniteHorizontalScroll")
                 .rectReader($visibleRect, in: .named("InfiniteHorizontalScroll"))
@@ -545,7 +556,9 @@ struct PagingView<Value: Fragment>: View {
             case let .item(_, index) = data,
             index > paging.values.count - 2 else { return }
 
-        paging.loadMore(pageSize: pageSize)
+        DispatchQueue.main.async {
+            paging.loadMore(pageSize: pageSize)
+        }
     }
 }
 
@@ -576,7 +589,7 @@ extension PagingView {
         self.init(paging,
                   mode: mode,
                   pageSize: pageSize,
-                  loading: { Text("Loading") },
+                  loading: { PagingBasicLoadingView(content: itemView) },
                   error: errorView,
                   item: itemView)
     }
@@ -601,14 +614,52 @@ extension PagingView {
         self.init(paging,
                   mode: mode,
                   pageSize: pageSize,
-                  loading: { Text("Loading") },
+                  loading: { PagingBasicLoadingView(content: itemView) },
                   error: { Text("Error: \($0.localizedDescription)") },
                   item: itemView)
     }
 }
 
+private struct PagingBasicLoadingView<Value: Fragment, Content: View>: View {
+    let content: (Value) -> Content
+
+    var body: some View {
+        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+            content(.placeholder).disabled(true).redacted(reason: .placeholder)
+        } else {
+            BasicLoadingView()
+        }
+    }
+}
+
 extension PagingView.Mode {
+    static func vertical(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, padding edges: Edge.Set, by padding: CGFloat) -> PagingView.Mode {
+        return .vertical(alignment: alignment,
+                         spacing: spacing,
+                         insets: EdgeInsets(top: edges.contains(.top) ? padding : 0,
+                                            leading: edges.contains(.leading) ? padding : 0,
+                                            bottom: edges.contains(.bottom) ? padding : 0,
+                                            trailing: edges.contains(.trailing) ? padding : 0))
+    }
+
+    static func vertical(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, padding: CGFloat) -> PagingView.Mode {
+        return .vertical(alignment: alignment, spacing: spacing, padding: .all, by: padding)
+    }
+
     static var vertical: PagingView.Mode { .vertical() }
+
+    static func horizontal(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, padding edges: Edge.Set, by padding: CGFloat) -> PagingView.Mode {
+        return .horizontal(alignment: alignment,
+                           spacing: spacing,
+                           insets: EdgeInsets(top: edges.contains(.top) ? padding : 0,
+                                              leading: edges.contains(.leading) ? padding : 0,
+                                              bottom: edges.contains(.bottom) ? padding : 0,
+                                              trailing: edges.contains(.trailing) ? padding : 0))
+    }
+
+    static func horizontal(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, padding: CGFloat) -> PagingView.Mode {
+        return .horizontal(alignment: alignment, spacing: spacing, padding: .all, by: padding)
+    }
 
     static var horizontal: PagingView.Mode { .horizontal() }
 }
@@ -656,16 +707,25 @@ enum NoOpDecoder<T>: GraphQLValueDecoder {
 
 protocol GraphQLScalar {
     associatedtype Scalar
+    static var placeholder: Self { get }
     init(from scalar: Scalar) throws
 }
 
 extension Array: GraphQLScalar where Element: GraphQLScalar {
+    static var placeholder: [Element] {
+        return Array(repeating: Element.placeholder, count: 5)
+    }
+
     init(from scalar: [Element.Scalar]) throws {
         self = try scalar.map { try Element(from: $0) }
     }
 }
 
 extension Optional: GraphQLScalar where Wrapped: GraphQLScalar {
+    static var placeholder: Wrapped? {
+        return Wrapped.placeholder
+    }
+
     init(from scalar: Wrapped.Scalar?) throws {
         guard let scalar = scalar else {
             self = .none
@@ -677,6 +737,8 @@ extension Optional: GraphQLScalar where Wrapped: GraphQLScalar {
 
 extension URL: GraphQLScalar {
     typealias Scalar = String
+
+    static let placeholder: URL = URL(string: "https://graphaello.dev/assets/logo.png")!
 
     private struct URLScalarDecodingError: Error {
         let string: String
@@ -695,6 +757,9 @@ enum ScalarDecoder<ScalarType: GraphQLScalar>: GraphQLValueDecoder {
     typealias Decoded = ScalarType
 
     static func decode(encoded: ScalarType.Scalar) throws -> ScalarType {
+        if let encoded = encoded as? String, encoded == "__GRAPHAELLO_PLACEHOLDER__" {
+            return Decoded.placeholder
+        }
         return try ScalarType(from: encoded)
     }
 }
@@ -813,7 +878,7 @@ extension GraphQL {
 
 // MARK: - Covid
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     struct Covid: API {
         let client: ApolloClient
@@ -828,12 +893,12 @@ extension GraphQL {
 
         static var continent: FragmentPath<Covid.DetailedContinent> { .init() }
 
-        static var continents: FragmentPath<[Covid.Continent]> { .init() }
+        static var continents: FragmentPath<[Covid.IContinent]> { .init() }
 
-        static func countries(last _: GraphQLArgument<Int?> = .argument,
+        static func countries(before _: GraphQLArgument<String?> = .argument,
                               first _: GraphQLArgument<Int?> = .argument,
-                              after _: GraphQLArgument<String?> = .argument,
-                              before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+                              last _: GraphQLArgument<Int?> = .argument,
+                              after _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
             return .init()
         }
 
@@ -846,9 +911,9 @@ extension GraphQL {
         static var country: FragmentPath<Covid.Country> { .init() }
 
         static func historicalData(after _: GraphQLArgument<String?> = .argument,
+                                   first _: GraphQLArgument<Int?> = .argument,
                                    last _: GraphQLArgument<Int?> = .argument,
-                                   before _: GraphQLArgument<String?> = .argument,
-                                   first _: GraphQLArgument<Int?> = .argument) -> FragmentPath<Covid.HistoricalDataConnection> {
+                                   before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.HistoricalDataConnection> {
             return .init()
         }
 
@@ -878,17 +943,7 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var country: FragmentPath<Country?> { .init() }
-
-            static var world: FragmentPath<World?> { .init() }
-
-            static var detailedContinent: FragmentPath<DetailedContinent?> { .init() }
-
-            static var DetailedAffected: FragmentPath<DetailedAffected?> { .init() }
-
-            static var Continent: FragmentPath<Continent?> { .init() }
-
-            static var Affected: FragmentPath<Affected?> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
             static var _fragment: FragmentPath<Affected> { .init() }
         }
@@ -919,9 +974,9 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var detailedContinent: FragmentPath<DetailedContinent?> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
-            static var Continent: FragmentPath<Continent?> { .init() }
+            static var iContinent: FragmentPath<IContinent> { .init() }
 
             static var _fragment: FragmentPath<Continent> { .init() }
         }
@@ -930,19 +985,30 @@ extension GraphQL {
             typealias Path<V> = GraphQLPath<ContinentIdentifier, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<ContinentIdentifier, V>
 
-            case northAmerica = "NorthAmerica"
-
-            case asia = "Asia"
-
             case europe = "Europe"
-
-            case southAmerica = "SouthAmerica"
-
-            case africa = "Africa"
 
             case australiaOceania = "AustraliaOceania"
 
+            case africa = "Africa"
+
+            case asia = "Asia"
+
+            case southAmerica = "SouthAmerica"
+
+            case northAmerica = "NorthAmerica"
+
             static var _fragment: FragmentPath<ContinentIdentifier> { .init() }
+        }
+
+        enum Coordinates: Target {
+            typealias Path<V> = GraphQLPath<Coordinates, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<Coordinates, V>
+
+            static var latitude: Path<Double> { .init() }
+
+            static var longitude: Path<Double> { .init() }
+
+            static var _fragment: FragmentPath<Coordinates> { .init() }
         }
 
         enum Country: Target {
@@ -964,6 +1030,8 @@ extension GraphQL {
             static var deaths: Path<Int> { .init() }
 
             static var deathsPerOneMillion: Path<Double?> { .init() }
+
+            static var geometry: FragmentPath<Covid.GeographicalGeometry?> { .init() }
 
             static var identifier: Path<Covid.CountryIdentifier> { .init() }
 
@@ -989,9 +1057,9 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var detailedAffected: FragmentPath<DetailedAffected> { .init() }
+            static var iDetailedAffected: FragmentPath<IDetailedAffected> { .init() }
 
-            static var affected: FragmentPath<Affected> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
             static var _fragment: FragmentPath<Country> { .init() }
         }
@@ -1027,7 +1095,23 @@ extension GraphQL {
             typealias Path<V> = GraphQLPath<DataPoint, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<DataPoint, V>
 
+            static var change: Path<Int> { .init() }
+
             static var date: Path<String> { .init() }
+
+            static var debugDescription: Path<String> { .init() }
+
+            static var description: Path<String> { .init() }
+
+            static var hash: Path<Int> { .init() }
+
+            static var isEqual: Path<Bool> { .init() }
+
+            static var isKind: Path<Bool> { .init() }
+
+            static var isMember: Path<Bool> { .init() }
+
+            static var isProxy: Path<Bool> { .init() }
 
             static var value: Path<Int> { .init() }
 
@@ -1063,17 +1147,16 @@ extension GraphQL {
             typealias Path<V> = GraphQLPath<DataPointsCollection, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<DataPointsCollection, V>
 
-            static func connection(after _: GraphQLArgument<String?> = .argument,
+            static func connection(last _: GraphQLArgument<Int?> = .argument,
+                                   after _: GraphQLArgument<String?> = .argument,
                                    first _: GraphQLArgument<Int?> = .argument,
-                                   last _: GraphQLArgument<Int?> = .argument,
                                    before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
                 return .init()
             }
 
             static var connection: FragmentPath<Covid.DataPointConnection> { .init() }
 
-            static func graph(since _: GraphQLArgument<String> = .argument,
-                              numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]> {
+            static func graph(numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]> {
                 return .init()
             }
 
@@ -1110,11 +1193,9 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var country: FragmentPath<Country?> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
-            static var world: FragmentPath<World?> { .init() }
-
-            static var DetailedAffected: FragmentPath<DetailedAffected?> { .init() }
+            static var iDetailedAffected: FragmentPath<IDetailedAffected> { .init() }
 
             static var _fragment: FragmentPath<DetailedAffected> { .init() }
         }
@@ -1127,7 +1208,14 @@ extension GraphQL {
 
             static var cases: Path<Int> { .init() }
 
-            static var countries: FragmentPath<[Covid.Country]> { .init() }
+            static func countries(after _: GraphQLArgument<String?> = .argument,
+                                  first _: GraphQLArgument<Int?> = .argument,
+                                  last _: GraphQLArgument<Int?> = .argument,
+                                  before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+                return .init()
+            }
+
+            static var countries: FragmentPath<Covid.CountryConnection> { .init() }
 
             static var countryIdentifiers: Path<[Covid.CountryIdentifier]> { .init() }
 
@@ -1149,11 +1237,22 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var continent: FragmentPath<Continent> { .init() }
+            static var iContinent: FragmentPath<IContinent> { .init() }
 
-            static var affected: FragmentPath<Affected> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
             static var _fragment: FragmentPath<DetailedContinent> { .init() }
+        }
+
+        enum GeographicalGeometry: Target {
+            typealias Path<V> = GraphQLPath<GeographicalGeometry, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<GeographicalGeometry, V>
+
+            static var polygon: FragmentPath<Polygon?> { .init() }
+
+            static var multiPolygon: FragmentPath<MultiPolygon?> { .init() }
+
+            static var _fragment: FragmentPath<GeographicalGeometry> { .init() }
         }
 
         enum HistoricalData: Target {
@@ -1194,6 +1293,111 @@ extension GraphQL {
             static var _fragment: FragmentPath<HistoricalDataEdge> { .init() }
         }
 
+        enum IAffected: Target {
+            typealias Path<V> = GraphQLPath<IAffected, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<IAffected, V>
+
+            static var active: Path<Int> { .init() }
+
+            static var cases: Path<Int> { .init() }
+
+            static var critical: Path<Int> { .init() }
+
+            static var deaths: Path<Int> { .init() }
+
+            static var recovered: Path<Int> { .init() }
+
+            static var todayCases: Path<Int> { .init() }
+
+            static var todayDeaths: Path<Int> { .init() }
+
+            static var updated: Path<String> { .init() }
+
+            static var country: FragmentPath<Country?> { .init() }
+
+            static var world: FragmentPath<World?> { .init() }
+
+            static var detailedContinent: FragmentPath<DetailedContinent?> { .init() }
+
+            static var detailedAffected: FragmentPath<DetailedAffected?> { .init() }
+
+            static var continent: FragmentPath<Continent?> { .init() }
+
+            static var affected: FragmentPath<Affected?> { .init() }
+
+            static var _fragment: FragmentPath<IAffected> { .init() }
+        }
+
+        enum IContinent: Target {
+            typealias Path<V> = GraphQLPath<IContinent, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<IContinent, V>
+
+            static var active: Path<Int> { .init() }
+
+            static var cases: Path<Int> { .init() }
+
+            static var critical: Path<Int> { .init() }
+
+            static var deaths: Path<Int> { .init() }
+
+            static var details: FragmentPath<Covid.DetailedContinent> { .init() }
+
+            static var identifier: Path<Covid.ContinentIdentifier> { .init() }
+
+            static var name: Path<String> { .init() }
+
+            static var recovered: Path<Int> { .init() }
+
+            static var todayCases: Path<Int> { .init() }
+
+            static var todayDeaths: Path<Int> { .init() }
+
+            static var updated: Path<String> { .init() }
+
+            static var detailedContinent: FragmentPath<DetailedContinent?> { .init() }
+
+            static var continent: FragmentPath<Continent?> { .init() }
+
+            static var _fragment: FragmentPath<IContinent> { .init() }
+        }
+
+        enum IDetailedAffected: Target {
+            typealias Path<V> = GraphQLPath<IDetailedAffected, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<IDetailedAffected, V>
+
+            static var active: Path<Int> { .init() }
+
+            static var cases: Path<Int> { .init() }
+
+            static var casesPerOneMillion: Path<Double?> { .init() }
+
+            static var critical: Path<Int> { .init() }
+
+            static var deaths: Path<Int> { .init() }
+
+            static var deathsPerOneMillion: Path<Double?> { .init() }
+
+            static var recovered: Path<Int> { .init() }
+
+            static var tests: Path<Int> { .init() }
+
+            static var testsPerOneMillion: Path<Double?> { .init() }
+
+            static var todayCases: Path<Int> { .init() }
+
+            static var todayDeaths: Path<Int> { .init() }
+
+            static var updated: Path<String> { .init() }
+
+            static var country: FragmentPath<Country?> { .init() }
+
+            static var world: FragmentPath<World?> { .init() }
+
+            static var detailedAffected: FragmentPath<DetailedAffected?> { .init() }
+
+            static var _fragment: FragmentPath<IDetailedAffected> { .init() }
+        }
+
         enum Info: Target {
             typealias Path<V> = GraphQLPath<Info, V>
             typealias FragmentPath<V> = GraphQLFragmentPath<Info, V>
@@ -1211,6 +1415,15 @@ extension GraphQL {
             static var longitude: Path<Double?> { .init() }
 
             static var _fragment: FragmentPath<Info> { .init() }
+        }
+
+        enum MultiPolygon: Target {
+            typealias Path<V> = GraphQLPath<MultiPolygon, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<MultiPolygon, V>
+
+            static var polygons: FragmentPath<[Covid.Polygon]> { .init() }
+
+            static var _fragment: FragmentPath<MultiPolygon> { .init() }
         }
 
         enum NewsStory: Target {
@@ -1247,6 +1460,15 @@ extension GraphQL {
             static var startCursor: Path<String?> { .init() }
 
             static var _fragment: FragmentPath<PageInfo> { .init() }
+        }
+
+        enum Polygon: Target {
+            typealias Path<V> = GraphQLPath<Polygon, V>
+            typealias FragmentPath<V> = GraphQLFragmentPath<Polygon, V>
+
+            static var points: FragmentPath<[Covid.Coordinates]> { .init() }
+
+            static var _fragment: FragmentPath<Polygon> { .init() }
         }
 
         enum Source: Target {
@@ -1307,9 +1529,9 @@ extension GraphQL {
 
             static var updated: Path<String> { .init() }
 
-            static var detailedAffected: FragmentPath<DetailedAffected> { .init() }
+            static var iDetailedAffected: FragmentPath<IDetailedAffected> { .init() }
 
-            static var affected: FragmentPath<Affected> { .init() }
+            static var iAffected: FragmentPath<IAffected> { .init() }
 
             static var _fragment: FragmentPath<World> { .init() }
         }
@@ -1318,22 +1540,18 @@ extension GraphQL {
     extension Covid {
         init(url: URL = URL(string: "https://covidql.apps.quintero.io")!,
              client: URLSessionClient = URLSessionClient(),
-             sendOperationIdentifiers: Bool = false,
              useGETForQueries: Bool = false,
              enableAutoPersistedQueries: Bool = false,
              useGETForPersistedQueryRetry: Bool = false,
-             requestCreator: RequestCreator = ApolloRequestCreator(),
-             delegate: HTTPNetworkTransportDelegate? = nil,
+             requestBodyCreator: RequestBodyCreator = ApolloRequestBodyCreator(),
              store: ApolloStore = ApolloStore(cache: InMemoryNormalizedCache())) {
-            let networkTransport = HTTPNetworkTransport(url: url,
-                                                        client: client,
-                                                        sendOperationIdentifiers: sendOperationIdentifiers,
-                                                        useGETForQueries: useGETForQueries,
-                                                        enableAutoPersistedQueries: enableAutoPersistedQueries,
-                                                        useGETForPersistedQueryRetry: useGETForPersistedQueryRetry,
-                                                        requestCreator: requestCreator)
-
-            networkTransport.delegate = delegate
+            let provider = LegacyInterceptorProvider(client: client, store: store)
+            let networkTransport = RequestChainNetworkTransport(interceptorProvider: provider,
+                                                                endpointURL: url,
+                                                                autoPersistQueries: enableAutoPersistedQueries,
+                                                                requestBodyCreator: requestBodyCreator,
+                                                                useGETForQueries: useGETForQueries,
+                                                                useGETForPersistedQueryRetry: useGETForPersistedQueryRetry)
             self.init(client: ApolloClient(networkTransport: networkTransport, store: store))
         }
     }
@@ -1355,17 +1573,7 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var country: FragmentPath<Covid.Country?> { .init() }
-
-        var world: FragmentPath<Covid.World?> { .init() }
-
-        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
-
-        var DetailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
-
-        var Continent: FragmentPath<Covid.Continent?> { .init() }
-
-        var Affected: FragmentPath<Covid.Affected?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Affected? {
@@ -1385,17 +1593,7 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var country: FragmentPath<Covid.Country?> { .init() }
-
-        var world: FragmentPath<Covid.World?> { .init() }
-
-        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
-
-        var DetailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
-
-        var Continent: FragmentPath<Covid.Continent?> { .init() }
-
-        var Affected: FragmentPath<Covid.Affected?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Continent {
@@ -1421,9 +1619,9 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
 
-        var Continent: FragmentPath<Covid.Continent?> { .init() }
+        var iContinent: FragmentPath<Covid.IContinent> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Continent? {
@@ -1449,14 +1647,26 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
 
-        var Continent: FragmentPath<Covid.Continent?> { .init() }
+        var iContinent: FragmentPath<Covid.IContinent?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.ContinentIdentifier {}
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.ContinentIdentifier? {}
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.Coordinates {
+        var latitude: Path<Double> { .init() }
+
+        var longitude: Path<Double> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.Coordinates? {
+        var latitude: Path<Double?> { .init() }
+
+        var longitude: Path<Double?> { .init() }
+    }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Country {
         var active: Path<Int> { .init() }
@@ -1474,6 +1684,8 @@ extension GraphQL {
         var deaths: Path<Int> { .init() }
 
         var deathsPerOneMillion: Path<Double?> { .init() }
+
+        var geometry: FragmentPath<Covid.GeographicalGeometry?> { .init() }
 
         var identifier: Path<Covid.CountryIdentifier> { .init() }
 
@@ -1499,9 +1711,9 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var detailedAffected: FragmentPath<Covid.DetailedAffected> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected> { .init() }
 
-        var affected: FragmentPath<Covid.Affected> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Country? {
@@ -1520,6 +1732,8 @@ extension GraphQL {
         var deaths: Path<Int?> { .init() }
 
         var deathsPerOneMillion: Path<Double?> { .init() }
+
+        var geometry: FragmentPath<Covid.GeographicalGeometry?> { .init() }
 
         var identifier: Path<Covid.CountryIdentifier?> { .init() }
 
@@ -1545,9 +1759,9 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected?> { .init() }
 
-        var affected: FragmentPath<Covid.Affected?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.CountryConnection {
@@ -1583,13 +1797,45 @@ extension GraphQL {
     extension GraphQLFragmentPath where UnderlyingType == Covid.CountryIdentifier? {}
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPoint {
+        var change: Path<Int> { .init() }
+
         var date: Path<String> { .init() }
+
+        var debugDescription: Path<String> { .init() }
+
+        var description: Path<String> { .init() }
+
+        var hash: Path<Int> { .init() }
+
+        var isEqual: Path<Bool> { .init() }
+
+        var isKind: Path<Bool> { .init() }
+
+        var isMember: Path<Bool> { .init() }
+
+        var isProxy: Path<Bool> { .init() }
 
         var value: Path<Int> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPoint? {
+        var change: Path<Int?> { .init() }
+
         var date: Path<String?> { .init() }
+
+        var debugDescription: Path<String?> { .init() }
+
+        var description: Path<String?> { .init() }
+
+        var hash: Path<Int?> { .init() }
+
+        var isEqual: Path<Bool?> { .init() }
+
+        var isKind: Path<Bool?> { .init() }
+
+        var isMember: Path<Bool?> { .init() }
+
+        var isProxy: Path<Bool?> { .init() }
 
         var value: Path<Int?> { .init() }
     }
@@ -1623,17 +1869,16 @@ extension GraphQL {
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPointsCollection {
-        func connection(after _: GraphQLArgument<String?> = .argument,
+        func connection(last _: GraphQLArgument<Int?> = .argument,
+                        after _: GraphQLArgument<String?> = .argument,
                         first _: GraphQLArgument<Int?> = .argument,
-                        last _: GraphQLArgument<Int?> = .argument,
                         before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection> {
             return .init()
         }
 
         var connection: FragmentPath<Covid.DataPointConnection> { .init() }
 
-        func graph(since _: GraphQLArgument<String> = .argument,
-                   numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]> {
+        func graph(numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]> {
             return .init()
         }
 
@@ -1641,17 +1886,16 @@ extension GraphQL {
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DataPointsCollection? {
-        func connection(after _: GraphQLArgument<String?> = .argument,
+        func connection(last _: GraphQLArgument<Int?> = .argument,
+                        after _: GraphQLArgument<String?> = .argument,
                         first _: GraphQLArgument<Int?> = .argument,
-                        last _: GraphQLArgument<Int?> = .argument,
                         before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.DataPointConnection?> {
             return .init()
         }
 
         var connection: FragmentPath<Covid.DataPointConnection?> { .init() }
 
-        func graph(since _: GraphQLArgument<String> = .argument,
-                   numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]?> {
+        func graph(numberOfPoints _: GraphQLArgument<Int> = .argument) -> FragmentPath<[Covid.DataPoint]?> {
             return .init()
         }
 
@@ -1683,11 +1927,9 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var country: FragmentPath<Covid.Country?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
 
-        var world: FragmentPath<Covid.World?> { .init() }
-
-        var DetailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DetailedAffected? {
@@ -1715,11 +1957,9 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var country: FragmentPath<Covid.Country?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
 
-        var world: FragmentPath<Covid.World?> { .init() }
-
-        var DetailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DetailedContinent {
@@ -1727,7 +1967,14 @@ extension GraphQL {
 
         var cases: Path<Int> { .init() }
 
-        var countries: FragmentPath<[Covid.Country]> { .init() }
+        func countries(after _: GraphQLArgument<String?> = .argument,
+                       first _: GraphQLArgument<Int?> = .argument,
+                       last _: GraphQLArgument<Int?> = .argument,
+                       before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection> {
+            return .init()
+        }
+
+        var countries: FragmentPath<Covid.CountryConnection> { .init() }
 
         var countryIdentifiers: Path<[Covid.CountryIdentifier]> { .init() }
 
@@ -1749,9 +1996,9 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var continent: FragmentPath<Covid.Continent> { .init() }
+        var iContinent: FragmentPath<Covid.IContinent> { .init() }
 
-        var affected: FragmentPath<Covid.Affected> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.DetailedContinent? {
@@ -1759,7 +2006,14 @@ extension GraphQL {
 
         var cases: Path<Int?> { .init() }
 
-        var countries: FragmentPath<[Covid.Country]?> { .init() }
+        func countries(after _: GraphQLArgument<String?> = .argument,
+                       first _: GraphQLArgument<Int?> = .argument,
+                       last _: GraphQLArgument<Int?> = .argument,
+                       before _: GraphQLArgument<String?> = .argument) -> FragmentPath<Covid.CountryConnection?> {
+            return .init()
+        }
+
+        var countries: FragmentPath<Covid.CountryConnection?> { .init() }
 
         var countryIdentifiers: Path<[Covid.CountryIdentifier]?> { .init() }
 
@@ -1781,9 +2035,21 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var continent: FragmentPath<Covid.Continent?> { .init() }
+        var iContinent: FragmentPath<Covid.IContinent?> { .init() }
 
-        var affected: FragmentPath<Covid.Affected?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.GeographicalGeometry {
+        var polygon: FragmentPath<Covid.Polygon?> { .init() }
+
+        var multiPolygon: FragmentPath<Covid.MultiPolygon?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.GeographicalGeometry? {
+        var polygon: FragmentPath<Covid.Polygon?> { .init() }
+
+        var multiPolygon: FragmentPath<Covid.MultiPolygon?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.HistoricalData {
@@ -1830,6 +2096,186 @@ extension GraphQL {
         var node: FragmentPath<Covid.HistoricalData?> { .init() }
     }
 
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IAffected {
+        var active: Path<Int> { .init() }
+
+        var cases: Path<Int> { .init() }
+
+        var critical: Path<Int> { .init() }
+
+        var deaths: Path<Int> { .init() }
+
+        var recovered: Path<Int> { .init() }
+
+        var todayCases: Path<Int> { .init() }
+
+        var todayDeaths: Path<Int> { .init() }
+
+        var updated: Path<String> { .init() }
+
+        var country: FragmentPath<Covid.Country?> { .init() }
+
+        var world: FragmentPath<Covid.World?> { .init() }
+
+        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+
+        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+
+        var continent: FragmentPath<Covid.Continent?> { .init() }
+
+        var affected: FragmentPath<Covid.Affected?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IAffected? {
+        var active: Path<Int?> { .init() }
+
+        var cases: Path<Int?> { .init() }
+
+        var critical: Path<Int?> { .init() }
+
+        var deaths: Path<Int?> { .init() }
+
+        var recovered: Path<Int?> { .init() }
+
+        var todayCases: Path<Int?> { .init() }
+
+        var todayDeaths: Path<Int?> { .init() }
+
+        var updated: Path<String?> { .init() }
+
+        var country: FragmentPath<Covid.Country?> { .init() }
+
+        var world: FragmentPath<Covid.World?> { .init() }
+
+        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+
+        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+
+        var continent: FragmentPath<Covid.Continent?> { .init() }
+
+        var affected: FragmentPath<Covid.Affected?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IContinent {
+        var active: Path<Int> { .init() }
+
+        var cases: Path<Int> { .init() }
+
+        var critical: Path<Int> { .init() }
+
+        var deaths: Path<Int> { .init() }
+
+        var details: FragmentPath<Covid.DetailedContinent> { .init() }
+
+        var identifier: Path<Covid.ContinentIdentifier> { .init() }
+
+        var name: Path<String> { .init() }
+
+        var recovered: Path<Int> { .init() }
+
+        var todayCases: Path<Int> { .init() }
+
+        var todayDeaths: Path<Int> { .init() }
+
+        var updated: Path<String> { .init() }
+
+        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+
+        var continent: FragmentPath<Covid.Continent?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IContinent? {
+        var active: Path<Int?> { .init() }
+
+        var cases: Path<Int?> { .init() }
+
+        var critical: Path<Int?> { .init() }
+
+        var deaths: Path<Int?> { .init() }
+
+        var details: FragmentPath<Covid.DetailedContinent?> { .init() }
+
+        var identifier: Path<Covid.ContinentIdentifier?> { .init() }
+
+        var name: Path<String?> { .init() }
+
+        var recovered: Path<Int?> { .init() }
+
+        var todayCases: Path<Int?> { .init() }
+
+        var todayDeaths: Path<Int?> { .init() }
+
+        var updated: Path<String?> { .init() }
+
+        var detailedContinent: FragmentPath<Covid.DetailedContinent?> { .init() }
+
+        var continent: FragmentPath<Covid.Continent?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IDetailedAffected {
+        var active: Path<Int> { .init() }
+
+        var cases: Path<Int> { .init() }
+
+        var casesPerOneMillion: Path<Double?> { .init() }
+
+        var critical: Path<Int> { .init() }
+
+        var deaths: Path<Int> { .init() }
+
+        var deathsPerOneMillion: Path<Double?> { .init() }
+
+        var recovered: Path<Int> { .init() }
+
+        var tests: Path<Int> { .init() }
+
+        var testsPerOneMillion: Path<Double?> { .init() }
+
+        var todayCases: Path<Int> { .init() }
+
+        var todayDeaths: Path<Int> { .init() }
+
+        var updated: Path<String> { .init() }
+
+        var country: FragmentPath<Covid.Country?> { .init() }
+
+        var world: FragmentPath<Covid.World?> { .init() }
+
+        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.IDetailedAffected? {
+        var active: Path<Int?> { .init() }
+
+        var cases: Path<Int?> { .init() }
+
+        var casesPerOneMillion: Path<Double?> { .init() }
+
+        var critical: Path<Int?> { .init() }
+
+        var deaths: Path<Int?> { .init() }
+
+        var deathsPerOneMillion: Path<Double?> { .init() }
+
+        var recovered: Path<Int?> { .init() }
+
+        var tests: Path<Int?> { .init() }
+
+        var testsPerOneMillion: Path<Double?> { .init() }
+
+        var todayCases: Path<Int?> { .init() }
+
+        var todayDeaths: Path<Int?> { .init() }
+
+        var updated: Path<String?> { .init() }
+
+        var country: FragmentPath<Covid.Country?> { .init() }
+
+        var world: FragmentPath<Covid.World?> { .init() }
+
+        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+    }
+
     extension GraphQLFragmentPath where UnderlyingType == Covid.Info {
         var emoji: Path<String?> { .init() }
 
@@ -1856,6 +2302,14 @@ extension GraphQL {
         var latitude: Path<Double?> { .init() }
 
         var longitude: Path<Double?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.MultiPolygon {
+        var polygons: FragmentPath<[Covid.Polygon]> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.MultiPolygon? {
+        var polygons: FragmentPath<[Covid.Polygon]?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.NewsStory {
@@ -1908,6 +2362,14 @@ extension GraphQL {
         var hasPreviousPage: Path<Bool?> { .init() }
 
         var startCursor: Path<String?> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.Polygon {
+        var points: FragmentPath<[Covid.Coordinates]> { .init() }
+    }
+
+    extension GraphQLFragmentPath where UnderlyingType == Covid.Polygon? {
+        var points: FragmentPath<[Covid.Coordinates]?> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.Source {
@@ -1969,9 +2431,9 @@ extension GraphQL {
 
         var updated: Path<String> { .init() }
 
-        var detailedAffected: FragmentPath<Covid.DetailedAffected> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected> { .init() }
 
-        var affected: FragmentPath<Covid.Affected> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected> { .init() }
     }
 
     extension GraphQLFragmentPath where UnderlyingType == Covid.World? {
@@ -2005,9 +2467,9 @@ extension GraphQL {
 
         var updated: Path<String?> { .init() }
 
-        var detailedAffected: FragmentPath<Covid.DetailedAffected?> { .init() }
+        var iDetailedAffected: FragmentPath<Covid.IDetailedAffected?> { .init() }
 
-        var affected: FragmentPath<Covid.Affected?> { .init() }
+        var iAffected: FragmentPath<Covid.IAffected?> { .init() }
     }
 
 #endif
@@ -2017,7 +2479,7 @@ extension GraphQL {
 
 // MARK: - BasicCountryCell
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ApolloCovid.BasicCountryCellCountry: Fragment {
         typealias UnderlyingType = Covid.Country
@@ -2031,9 +2493,145 @@ extension GraphQL {
             self.init(api: api,
                       name: GraphQL(country.name),
                       identifier: GraphQL(country.identifier),
-                      countryCode: GraphQL(country.info.iso2),
+                      emoji: GraphQL(country.info.emoji),
                       cases: GraphQL(country.cases))
         }
+
+        @ViewBuilder
+        static func placeholderView(api: Covid) -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(api: api,
+                     country: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
+        }
+    }
+
+    extension ApolloCovid.BasicCountryCellCountry {
+        private static let placeholderMap: ResultMap = ["__typename": "Country", "cases": 42, "identifier": Covid.CountryIdentifier(rawValue: "Haiti")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__"]
+
+        static let placeholder = ApolloCovid.BasicCountryCellCountry(
+            unsafeResultMap: ApolloCovid.BasicCountryCellCountry.placeholderMap
+        )
+    }
+
+#endif
+
+
+// MARK: - Coordinates
+
+#if GRAPHAELLO_COVID_UI_TARGET
+
+    extension ApolloCovid.CoordinatesCoordinates: Fragment {
+        typealias UnderlyingType = Covid.Coordinates
+    }
+
+    extension Coordinates {
+        typealias Coordinates = ApolloCovid.CoordinatesCoordinates
+
+        init(coordinates: Coordinates) {
+            self.init(latitude: GraphQL(coordinates.latitude),
+                      longitude: GraphQL(coordinates.longitude))
+        }
+    }
+
+    extension Coordinates: Fragment {
+        typealias UnderlyingType = Covid.Coordinates
+
+        static let placeholder = Self(coordinates: .placeholder)
+    }
+
+    extension ApolloCovid.CoordinatesCoordinates {
+        func referencedSingleFragmentStruct() -> Coordinates {
+            return Coordinates(coordinates: self)
+        }
+    }
+
+    extension ApolloCovid.CoordinatesCoordinates {
+        private static let placeholderMap: ResultMap = ["__typename": "Coordinates", "latitude": 42.0, "longitude": 42.0]
+
+        static let placeholder = ApolloCovid.CoordinatesCoordinates(
+            unsafeResultMap: ApolloCovid.CoordinatesCoordinates.placeholderMap
+        )
+    }
+
+#endif
+
+
+// MARK: - Polygon
+
+#if GRAPHAELLO_COVID_UI_TARGET
+
+    extension ApolloCovid.PolygonPolygon: Fragment {
+        typealias UnderlyingType = Covid.Polygon
+    }
+
+    extension Polygon {
+        typealias Polygon = ApolloCovid.PolygonPolygon
+
+        init(polygon: Polygon) {
+            self.init(points: GraphQL(polygon.points.map { $0.fragments.coordinatesCoordinates.referencedSingleFragmentStruct() }))
+        }
+    }
+
+    extension Polygon: Fragment {
+        typealias UnderlyingType = Covid.Polygon
+
+        static let placeholder = Self(polygon: .placeholder)
+    }
+
+    extension ApolloCovid.PolygonPolygon {
+        func referencedSingleFragmentStruct() -> Polygon {
+            return Polygon(polygon: self)
+        }
+    }
+
+    extension ApolloCovid.PolygonPolygon {
+        private static let placeholderMap: ResultMap = ["__typename": "Polygon", "points": Array(repeating: ["__typename": "Coordinates", "latitude": 42.0, "longitude": 42.0], count: 5) as [ResultMap]]
+
+        static let placeholder = ApolloCovid.PolygonPolygon(
+            unsafeResultMap: ApolloCovid.PolygonPolygon.placeholderMap
+        )
+    }
+
+#endif
+
+
+// MARK: - MultiPolygon
+
+#if GRAPHAELLO_COVID_UI_TARGET
+
+    extension ApolloCovid.MultiPolygonMultiPolygon: Fragment {
+        typealias UnderlyingType = Covid.MultiPolygon
+    }
+
+    extension MultiPolygon {
+        typealias MultiPolygon = ApolloCovid.MultiPolygonMultiPolygon
+
+        init(multiPolygon: MultiPolygon) {
+            self.init(polygons: GraphQL(multiPolygon.polygons.map { $0.fragments.polygonPolygon.referencedSingleFragmentStruct() }))
+        }
+    }
+
+    extension MultiPolygon: Fragment {
+        typealias UnderlyingType = Covid.MultiPolygon
+
+        static let placeholder = Self(multiPolygon: .placeholder)
+    }
+
+    extension ApolloCovid.MultiPolygonMultiPolygon {
+        func referencedSingleFragmentStruct() -> MultiPolygon {
+            return MultiPolygon(multiPolygon: self)
+        }
+    }
+
+    extension ApolloCovid.MultiPolygonMultiPolygon {
+        private static let placeholderMap: ResultMap = ["__typename": "MultiPolygon", "polygons": Array(repeating: ["__typename": "Polygon", "points": Array(repeating: ["__typename": "Coordinates", "latitude": 42.0, "longitude": 42.0], count: 5) as [ResultMap]], count: 5) as [ResultMap]]
+
+        static let placeholder = ApolloCovid.MultiPolygonMultiPolygon(
+            unsafeResultMap: ApolloCovid.MultiPolygonMultiPolygon.placeholderMap
+        )
     }
 
 #endif
@@ -2041,7 +2639,7 @@ extension GraphQL {
 
 // MARK: - CountryMapPin
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ApolloCovid.CountryMapPinCountry: Fragment {
         typealias UnderlyingType = Covid.Country
@@ -2051,7 +2649,9 @@ extension GraphQL {
         typealias Country = ApolloCovid.CountryMapPinCountry
 
         init(country: Country) {
-            self.init(cases: GraphQL(country.cases),
+            self.init(active: GraphQL(country.active),
+                      polygon: GraphQL(country.geometry?.asPolygon?.fragments.polygonPolygon.referencedSingleFragmentStruct()),
+                      multiPolygon: GraphQL(country.geometry?.asMultiPolygon?.fragments.multiPolygonMultiPolygon.referencedSingleFragmentStruct()),
                       latitude: GraphQL(country.info.latitude),
                       longitude: GraphQL(country.info.longitude))
         }
@@ -2059,6 +2659,8 @@ extension GraphQL {
 
     extension CountryMapPin: Fragment {
         typealias UnderlyingType = Covid.Country
+
+        static let placeholder = Self(country: .placeholder)
     }
 
     extension ApolloCovid.CountryMapPinCountry {
@@ -2067,12 +2669,20 @@ extension GraphQL {
         }
     }
 
+    extension ApolloCovid.CountryMapPinCountry {
+        private static let placeholderMap: ResultMap = ["__typename": "Country", "active": 42, "geometry": ["__typename": "GeographicalGeometry"], "info": ["__typename": "Info", "latitude": 42.0, "longitude": 42.0]]
+
+        static let placeholder = ApolloCovid.CountryMapPinCountry(
+            unsafeResultMap: ApolloCovid.CountryMapPinCountry.placeholderMap
+        )
+    }
+
 #endif
 
 
 // MARK: - NewsStoryCell
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ApolloCovid.NewsStoryCellNewsStory: Fragment {
         typealias UnderlyingType = Covid.NewsStory
@@ -2088,10 +2698,21 @@ extension GraphQL {
                       image: GraphQL(newsStory.image),
                       url: GraphQL(newsStory.url))
         }
+
+        @ViewBuilder
+        static func placeholderView() -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(newsStory: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
+        }
     }
 
     extension NewsStoryCell: Fragment {
         typealias UnderlyingType = Covid.NewsStory
+
+        static let placeholder = Self(newsStory: .placeholder)
     }
 
     extension ApolloCovid.NewsStoryCellNewsStory {
@@ -2100,35 +2721,62 @@ extension GraphQL {
         }
     }
 
+    extension ApolloCovid.NewsStoryCellNewsStory {
+        private static let placeholderMap: ResultMap = ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"]
+
+        static let placeholder = ApolloCovid.NewsStoryCellNewsStory(
+            unsafeResultMap: ApolloCovid.NewsStoryCellNewsStory.placeholderMap
+        )
+    }
+
 #endif
 
 
 // MARK: - StatsView
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
-    extension ApolloCovid.StatsViewAffected: Fragment {
-        typealias UnderlyingType = Covid.Affected
+    extension ApolloCovid.StatsViewIAffected: Fragment {
+        typealias UnderlyingType = Covid.IAffected
     }
 
     extension StatsView {
-        typealias Affected = ApolloCovid.StatsViewAffected
+        typealias IAffected = ApolloCovid.StatsViewIAffected
 
-        init(affected: Affected) {
-            self.init(cases: GraphQL(affected.cases),
-                      deaths: GraphQL(affected.deaths),
-                      recovered: GraphQL(affected.recovered))
+        init(iAffected: IAffected) {
+            self.init(cases: GraphQL(iAffected.cases),
+                      deaths: GraphQL(iAffected.deaths),
+                      recovered: GraphQL(iAffected.recovered))
+        }
+
+        @ViewBuilder
+        static func placeholderView() -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(iAffected: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
         }
     }
 
     extension StatsView: Fragment {
-        typealias UnderlyingType = Covid.Affected
+        typealias UnderlyingType = Covid.IAffected
+
+        static let placeholder = Self(iAffected: .placeholder)
     }
 
-    extension ApolloCovid.StatsViewAffected {
+    extension ApolloCovid.StatsViewIAffected {
         func referencedSingleFragmentStruct() -> StatsView {
-            return StatsView(affected: self)
+            return StatsView(iAffected: self)
         }
+    }
+
+    extension ApolloCovid.StatsViewIAffected {
+        private static let placeholderMap: ResultMap = ["__typename": "IAffected", "cases": 42, "deaths": 42, "recovered": 42]
+
+        static let placeholder = ApolloCovid.StatsViewIAffected(
+            unsafeResultMap: ApolloCovid.StatsViewIAffected.placeholderMap
+        )
     }
 
 #endif
@@ -2136,15 +2784,15 @@ extension GraphQL {
 
 // MARK: - CountryDetailView
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension CountryDetailView {
         typealias Data = ApolloCovid.CountryDetailViewQuery.Data
 
         init(data: Data) {
             self.init(name: GraphQL(data.country.name),
-                      countryCode: GraphQL(data.country.info.iso2),
-                      affected: GraphQL(data.country.fragments.statsViewAffected),
+                      emoji: GraphQL(data.country.info.emoji),
+                      affected: GraphQL(data.country.fragments.statsViewIAffected),
                       casesToday: GraphQL(data.country.todayCases),
                       deathsToday: GraphQL(data.country.todayDeaths),
                       casesOverTime: GraphQL(data.country.timeline.cases.graph.map { $0.value }),
@@ -2153,18 +2801,25 @@ extension GraphQL {
                       images: GraphQL(data.country.news.map { $0.image }),
                       news: GraphQL(data.country.news.map { $0.fragments.newsStoryCellNewsStory }))
         }
+
+        @ViewBuilder
+        static func placeholderView() -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(data: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
+        }
     }
 
     extension Covid {
         func countryDetailView<Loading: View, Error: View>(identifier: Covid.CountryIdentifier,
-                                                           since: String = "2001-01-01T00:00:00Z",
                                                            numberOfPoints: Int = 30,
                                                            
                                                            @ViewBuilder loading: () -> Loading,
                                                            @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
                                  query: ApolloCovid.CountryDetailViewQuery(identifier: identifier,
-                                                                           since: since,
                                                                            numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: error) { (data: ApolloCovid.CountryDetailViewQuery.Data) -> CountryDetailView in
@@ -2174,13 +2829,11 @@ extension GraphQL {
         }
 
         func countryDetailView<Loading: View>(identifier: Covid.CountryIdentifier,
-                                              since: String = "2001-01-01T00:00:00Z",
                                               numberOfPoints: Int = 30,
                                               
                                               @ViewBuilder loading: () -> Loading) -> some View {
             return QueryRenderer(client: client,
                                  query: ApolloCovid.CountryDetailViewQuery(identifier: identifier,
-                                                                           since: since,
                                                                            numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: { BasicErrorView(error: $0) }) { (data: ApolloCovid.CountryDetailViewQuery.Data) -> CountryDetailView in
@@ -2190,15 +2843,13 @@ extension GraphQL {
         }
 
         func countryDetailView<Error: View>(identifier: Covid.CountryIdentifier,
-                                            since: String = "2001-01-01T00:00:00Z",
                                             numberOfPoints: Int = 30,
                                             
                                             @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
                                  query: ApolloCovid.CountryDetailViewQuery(identifier: identifier,
-                                                                           since: since,
                                                                            numberOfPoints: numberOfPoints),
-                                 loading: BasicLoadingView(),
+                                 loading: CountryDetailView.placeholderView(),
                                  error: error) { (data: ApolloCovid.CountryDetailViewQuery.Data) -> CountryDetailView in
 
                 CountryDetailView(data: data)
@@ -2206,13 +2857,11 @@ extension GraphQL {
         }
 
         func countryDetailView(identifier: Covid.CountryIdentifier,
-                               since: String = "2001-01-01T00:00:00Z",
                                numberOfPoints: Int = 30) -> some View {
             return QueryRenderer(client: client,
                                  query: ApolloCovid.CountryDetailViewQuery(identifier: identifier,
-                                                                           since: since,
                                                                            numberOfPoints: numberOfPoints),
-                                 loading: BasicLoadingView(),
+                                 loading: CountryDetailView.placeholderView(),
                                  error: { BasicErrorView(error: $0) }) { (data: ApolloCovid.CountryDetailViewQuery.Data) -> CountryDetailView in
 
                 CountryDetailView(data: data)
@@ -2220,12 +2869,20 @@ extension GraphQL {
         }
     }
 
+    extension ApolloCovid.CountryDetailViewQuery.Data {
+        private static let placeholderMap: ResultMap = ["country": ["__typename": "Country", "cases": 42, "deaths": 42, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__", "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]], "deaths": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]], "recovered": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]], "todayCases": 42, "todayDeaths": 42]]
+
+        static let placeholder = ApolloCovid.CountryDetailViewQuery.Data(
+            unsafeResultMap: ApolloCovid.CountryDetailViewQuery.Data.placeholderMap
+        )
+    }
+
 #endif
 
 
 // MARK: - CurrentStateCell
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ApolloCovid.CurrentStateCellWorld: Fragment {
         typealias UnderlyingType = Covid.World
@@ -2235,12 +2892,23 @@ extension GraphQL {
         typealias World = ApolloCovid.CurrentStateCellWorld
 
         init(world: World) {
-            self.init(affected: GraphQL(world.fragments.statsViewAffected))
+            self.init(affected: GraphQL(world.fragments.statsViewIAffected))
+        }
+
+        @ViewBuilder
+        static func placeholderView() -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(world: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
         }
     }
 
     extension CurrentStateCell: Fragment {
         typealias UnderlyingType = Covid.World
+
+        static let placeholder = Self(world: .placeholder)
     }
 
     extension ApolloCovid.CurrentStateCellWorld {
@@ -2249,12 +2917,20 @@ extension GraphQL {
         }
     }
 
+    extension ApolloCovid.CurrentStateCellWorld {
+        private static let placeholderMap: ResultMap = ["__typename": "World", "cases": 42, "deaths": 42, "recovered": 42]
+
+        static let placeholder = ApolloCovid.CurrentStateCellWorld(
+            unsafeResultMap: ApolloCovid.CurrentStateCellWorld.placeholderMap
+        )
+    }
+
 #endif
 
 
 // MARK: - FeaturedCountryCell
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ApolloCovid.FeaturedCountryCellCountry: Fragment {
         typealias UnderlyingType = Covid.Country
@@ -2267,11 +2943,29 @@ extension GraphQL {
              country: Country) {
             self.init(api: api,
                       name: GraphQL(country.name),
-                      countryCode: GraphQL(country.info.iso2),
-                      affected: GraphQL(country.fragments.statsViewAffected),
+                      emoji: GraphQL(country.info.emoji),
+                      affected: GraphQL(country.fragments.statsViewIAffected),
                       todayDeaths: GraphQL(country.todayDeaths),
                       casesOverTime: GraphQL(country.timeline.cases.graph.map { $0.value }))
         }
+
+        @ViewBuilder
+        static func placeholderView(api: Covid) -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(api: api,
+                     country: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
+        }
+    }
+
+    extension ApolloCovid.FeaturedCountryCellCountry {
+        private static let placeholderMap: ResultMap = ["__typename": "Country", "cases": 42, "deaths": 42, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__", "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]], "todayDeaths": 42]
+
+        static let placeholder = ApolloCovid.FeaturedCountryCellCountry(
+            unsafeResultMap: ApolloCovid.FeaturedCountryCellCountry.placeholderMap
+        )
     }
 
 #endif
@@ -2279,7 +2973,7 @@ extension GraphQL {
 
 // MARK: - ContentView
 
-#if GRAPHAELLO_COVID_UI__TARGET
+#if GRAPHAELLO_COVID_UI_TARGET
 
     extension ContentView {
         typealias Data = ApolloCovid.ContentViewQuery.Data
@@ -2293,40 +2987,48 @@ extension GraphQL {
                       currentCountryNews: GraphQL(data.myCountry?.news.map { $0.fragments.newsStoryCellNewsStory }),
                       world: GraphQL(data.world.fragments.currentStateCellWorld),
                       cases: GraphQL(data.world.timeline.cases.graph.map { $0.value }),
-                      deaths: GraphQL(data.world.timeline.deaths.graph.map { $0.value }),
-                      recovered: GraphQL(data.world.timeline.recovered.graph.map { $0.value }),
                       news: GraphQL(data.world.news.map { $0.fragments.newsStoryCellNewsStory }),
                       countries: GraphQL(countries),
                       pins: GraphQL(((data.countries.edges?.map { $0?.node })?.compactMap { $0 } ?? []).map { $0.fragments.countryMapPinCountry.referencedSingleFragmentStruct() }))
         }
+
+        @ViewBuilder
+        static func placeholderView(api: Covid,
+                                    countries: Paging<BasicCountryCell.Country>) -> some View {
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                Self(api: api,
+                     countries: countries,
+                     data: .placeholder).disabled(true).redacted(reason: .placeholder)
+            } else {
+                BasicLoadingView()
+            }
+        }
     }
 
     extension Covid {
-        func contentView<Loading: View, Error: View>(last: Int? = nil,
+        func contentView<Loading: View, Error: View>(before: String? = nil,
                                                      first: Int? = nil,
+                                                     last: Int? = nil,
                                                      after: String? = nil,
-                                                     before: String? = nil,
-                                                     since: String = "2001-01-01T00:00:00Z",
                                                      numberOfPoints: Int = 30,
                                                      
                                                      @ViewBuilder loading: () -> Loading,
                                                      @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(last: last,
+                                 query: ApolloCovid.ContentViewQuery(before: before,
                                                                      first: first,
+                                                                     last: last,
                                                                      after: after,
-                                                                     before: before,
-                                                                     since: since,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: error) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(last: last,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       after: _cursor,
-                                                                                                                                       before: before)) { result in
+                                                                                                                                       last: last,
+                                                                                                                                       after: _cursor)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -2335,30 +3037,28 @@ extension GraphQL {
             }
         }
 
-        func contentView<Loading: View>(last: Int? = nil,
+        func contentView<Loading: View>(before: String? = nil,
                                         first: Int? = nil,
+                                        last: Int? = nil,
                                         after: String? = nil,
-                                        before: String? = nil,
-                                        since: String = "2001-01-01T00:00:00Z",
                                         numberOfPoints: Int = 30,
                                         
                                         @ViewBuilder loading: () -> Loading) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(last: last,
+                                 query: ApolloCovid.ContentViewQuery(before: before,
                                                                      first: first,
+                                                                     last: last,
                                                                      after: after,
-                                                                     before: before,
-                                                                     since: since,
                                                                      numberOfPoints: numberOfPoints),
                                  loading: loading(),
                                  error: { BasicErrorView(error: $0) }) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(last: last,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       after: _cursor,
-                                                                                                                                       before: before)) { result in
+                                                                                                                                       last: last,
+                                                                                                                                       after: _cursor)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -2367,30 +3067,31 @@ extension GraphQL {
             }
         }
 
-        func contentView<Error: View>(last: Int? = nil,
+        func contentView<Error: View>(before: String? = nil,
                                       first: Int? = nil,
+                                      last: Int? = nil,
                                       after: String? = nil,
-                                      before: String? = nil,
-                                      since: String = "2001-01-01T00:00:00Z",
                                       numberOfPoints: Int = 30,
                                       
                                       @ViewBuilder error: @escaping (QueryError) -> Error) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(last: last,
+                                 query: ApolloCovid.ContentViewQuery(before: before,
                                                                      first: first,
+                                                                     last: last,
                                                                      after: after,
-                                                                     before: before,
-                                                                     since: since,
                                                                      numberOfPoints: numberOfPoints),
-                                 loading: BasicLoadingView(),
+                                 loading: ContentView.placeholderView(api: self,
+                                                                      countries: ApolloCovid.ContentViewQuery.Data.placeholder.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _, _, _ in
+                                                                          // no-op
+                                 }),
                                  error: error) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(last: last,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       after: _cursor,
-                                                                                                                                       before: before)) { result in
+                                                                                                                                       last: last,
+                                                                                                                                       after: _cursor)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -2399,28 +3100,29 @@ extension GraphQL {
             }
         }
 
-        func contentView(last: Int? = nil,
+        func contentView(before: String? = nil,
                          first: Int? = nil,
+                         last: Int? = nil,
                          after: String? = nil,
-                         before: String? = nil,
-                         since: String = "2001-01-01T00:00:00Z",
                          numberOfPoints: Int = 30) -> some View {
             return QueryRenderer(client: client,
-                                 query: ApolloCovid.ContentViewQuery(last: last,
+                                 query: ApolloCovid.ContentViewQuery(before: before,
                                                                      first: first,
+                                                                     last: last,
                                                                      after: after,
-                                                                     before: before,
-                                                                     since: since,
                                                                      numberOfPoints: numberOfPoints),
-                                 loading: BasicLoadingView(),
+                                 loading: ContentView.placeholderView(api: self,
+                                                                      countries: ApolloCovid.ContentViewQuery.Data.placeholder.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _, _, _ in
+                                                                          // no-op
+                                 }),
                                  error: { BasicErrorView(error: $0) }) { (data: ApolloCovid.ContentViewQuery.Data) -> ContentView in
 
                 ContentView(api: self,
                             countries: data.countries.fragments.countryConnectionBasicCountryCellCountry.paging { _cursor, _pageSize, _completion in
-                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(last: last,
+                                self.client.fetch(query: ApolloCovid.ContentViewCountriesCountryConnectionBasicCountryCellCountryQuery(before: before,
                                                                                                                                        first: _pageSize ?? first,
-                                                                                                                                       after: _cursor,
-                                                                                                                                       before: before)) { result in
+                                                                                                                                       last: last,
+                                                                                                                                       after: _cursor)) { result in
                                     _completion(result.map { $0.data?.countries.fragments.countryConnectionBasicCountryCellCountry })
                                 }
                             },
@@ -2428,6 +3130,14 @@ extension GraphQL {
                             data: data)
             }
         }
+    }
+
+    extension ApolloCovid.ContentViewQuery.Data {
+        private static let placeholderMap: ResultMap = ["countries": ["__typename": "CountryConnection", "edges": Array(repeating: ["__typename": "CountryEdge", "node": ["__typename": "Country", "active": 42, "cases": 42, "geometry": ["__typename": "GeographicalGeometry"], "identifier": Covid.CountryIdentifier(rawValue: "Haiti")!, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__", "latitude": 42.0, "longitude": 42.0], "name": "__GRAPHAELLO_PLACEHOLDER__"]], count: 5) as [ResultMap], "pageInfo": ["__typename": "PageInfo", "endCursor": "__GRAPHAELLO_PLACEHOLDER__", "hasNextPage": true]], "myCountry": ["__typename": "Country", "cases": 42, "deaths": 42, "info": ["__typename": "Info", "emoji": "__GRAPHAELLO_PLACEHOLDER__"], "name": "__GRAPHAELLO_PLACEHOLDER__", "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]], "todayDeaths": 42], "world": ["__typename": "World", "cases": 42, "deaths": 42, "news": Array(repeating: ["__typename": "NewsStory", "image": "__GRAPHAELLO_PLACEHOLDER__", "overview": "__GRAPHAELLO_PLACEHOLDER__", "source": ["__typename": "Source", "name": "__GRAPHAELLO_PLACEHOLDER__"], "title": "__GRAPHAELLO_PLACEHOLDER__", "url": "__GRAPHAELLO_PLACEHOLDER__"], count: 5) as [ResultMap], "recovered": 42, "timeline": ["__typename": "Timeline", "cases": ["__typename": "DataPointsCollection", "graph": Array(repeating: ["__typename": "DataPoint", "value": 42], count: 5) as [ResultMap]]]]]
+
+        static let placeholder = ApolloCovid.ContentViewQuery.Data(
+            unsafeResultMap: ApolloCovid.ContentViewQuery.Data.placeholderMap
+        )
     }
 
     extension ApolloCovid.ContentViewQuery.Data.MyCountry.Fragments {
@@ -2478,883 +3188,907 @@ import Foundation
 public enum ApolloCovid {
   public enum CountryIdentifier: RawRepresentable, Equatable, Hashable, CaseIterable, Apollo.JSONDecodable, Apollo.JSONEncodable {
     public typealias RawValue = String
-    case turksAndCaicosIslands
-    case dominicanRepublic
-    case greece
-    case senegal
-    case panama
-    case syrianArabRepublic
-    case ethiopia
-    case fiji
-    case kazakhstan
-    case brazil
-    case libyanArabJamahiriya
-    case lithuania
-    case andorra
-    case trinidadAndTobago
-    case saintKittsAndNevis
-    case brunei
-    case argentina
-    case finland
-    case costaRica
-    case portugal
-    case rwanda
-    case australia
-    case guineaBissau
-    case gabon
-    case saintLucia
-    case sudan
-    case yemen
-    case barbados
-    case guyana
-    case ecuador
-    case macao
-    case colombia
-    case poland
-    case sanMarino
-    case swaziland
-    case venezuela
-    case cambodia
-    case westernSahara
-    case kenya
-    case turkey
-    case malawi
-    case tajikistan
-    case nicaragua
-    case israel
-    case bangladesh
-    case sKorea
-    case chad
-    case zimbabwe
-    case montserrat
-    case comoros
-    case uruguay
-    case switzerland
-    case cuba
-    case jordan
-    case congo
-    case uganda
-    case greenland
-    case southAfrica
-    case elSalvador
-    case grenada
-    case suriname
-    case mauritius
-    case malta
-    case ghana
-    case latvia
-    case paraguay
-    case niger
-    case guinea
-    case taiwan
-    case papuaNewGuinea
-    case togo
-    case liechtenstein
-    case ukraine
-    case equatorialGuinea
-    case spain
-    case madagascar
-    case georgia
-    case montenegro
-    case belize
-    case thailand
-    case armenia
-    case usa
-    case maldives
-    case drc
-    case gambia
-    case kuwait
-    case bhutan
-    case mongolia
-    case liberia
-    case nepal
-    case msZaandam
-    case moldova
-    case oman
-    case pakistan
-    case coteDIvoire
-    case monaco
-    case curacao
-    case bosnia
-    case albania
-    case saintPierreMiquelon
-    case mali
-    case netherlands
-    case stBarth
-    case britishVirginIslands
-    case france
-    case croatia
-    case falklandIslandsMalvinas
-    case bolivia
-    case bermuda
-    case bahrain
-    case palestine
-    case japan
-    case azerbaijan
-    case hungary
-    case kyrgyzstan
-    case cameroon
-    case algeria
     case haiti
-    case myanmar
-    case macedonia
-    case malaysia
-    case russia
-    case sweden
-    case eritrea
-    case gibraltar
-    case lebanon
-    case hongKong
-    case laoPeopleSDemocraticRepublic
-    case morocco
-    case tanzania
-    case botswana
-    case egypt
-    case sriLanka
-    case czechia
-    case caboVerde
-    case romania
-    case tunisia
-    case sintMaarten
-    case slovenia
-    case singapore
-    case namibia
-    case estonia
-    case mauritania
-    case italy
-    case iceland
-    case afghanistan
-    case bulgaria
-    case diamondPrincess
-    case china
-    case belarus
-    case frenchPolynesia
-    case peru
-    case channelIslands
-    case bahamas
-    case canada
-    case honduras
-    case newZealand
-    case iraq
-    case saoTomeAndPrincipe
-    case luxembourg
-    case dominica
-    case frenchGuiana
-    case caymanIslands
-    case benin
-    case caribbeanNetherlands
-    case timorLeste
-    case guatemala
-    case saintMartin
-    case vietnam
-    case martinique
-    case djibouti
-    case holySeeVaticanCityState
-    case angola
-    case qatar
-    case reunion
-    case saintVincentAndTheGrenadines
-    case austria
-    case seychelles
-    case saudiArabia
-    case somalia
-    case norway
-    case guadeloupe
-    case chile
-    case mexico
-    case india
-    case germany
-    case burkinaFaso
-    case anguilla
-    case lesotho
-    case denmark
-    case southSudan
-    case newCaledonia
-    case iran
-    case mayotte
-    case cyprus
-    case mozambique
-    case nigeria
-    case aruba
-    case antiguaAndBarbuda
-    case zambia
-    case serbia
-    case uk
-    case indonesia
-    case isleOfMan
-    case uzbekistan
-    case faroeIslands
-    case ireland
-    case jamaica
-    case burundi
+    case solomonIslands
+    case libyanArabJamahiriya
     case centralAfricanRepublic
-    case philippines
+    case wallisAndFutuna
+    case egypt
+    case frenchPolynesia
+    case equatorialGuinea
+    case curacao
+    case samoa
+    case honduras
+    case mozambique
+    case msZaandam
+    case slovenia
+    case bhutan
+    case morocco
+    case bulgaria
+    case sanMarino
+    case guinea
+    case iran
+    case burundi
+    case lesotho
+    case mauritius
+    case ireland
+    case papuaNewGuinea
+    case swaziland
+    case saintKittsAndNevis
+    case seychelles
+    case japan
+    case vanuatu
+    case uk
+    case thailand
+    case nepal
+    case sriLanka
+    case barbados
+    case syrianArabRepublic
+    case nicaragua
+    case chile
+    case australia
+    case andorra
+    case bangladesh
+    case saoTomeAndPrincipe
+    case estonia
     case uae
+    case norway
+    case philippines
+    case macao
+    case fiji
+    case russia
+    case panama
+    case myanmar
+    case kyrgyzstan
+    case singapore
+    case malaysia
+    case elSalvador
+    case iraq
+    case anguilla
+    case newCaledonia
+    case frenchGuiana
+    case niger
+    case dominica
+    case belize
+    case georgia
+    case bahamas
+    case sweden
+    case liberia
+    case ecuador
+    case indonesia
+    case saintPierreMiquelon
+    case brazil
+    case tunisia
+    case ghana
+    case india
+    case gambia
+    case qatar
+    case trinidadAndTobago
+    case djibouti
+    case turkey
+    case liechtenstein
+    case grenada
+    case britishVirginIslands
+    case comoros
+    case cameroon
+    case azerbaijan
+    case southSudan
+    case kazakhstan
+    case falklandIslandsMalvinas
+    case belarus
+    case greenland
+    case botswana
+    case israel
+    case malawi
+    case micronesia
+    case spain
+    case hungary
+    case uzbekistan
+    case guineaBissau
+    case germany
+    case guyana
+    case bolivia
+    case gabon
+    case finland
+    case canada
+    case afghanistan
+    case saintMartin
     case sierraLeone
-    case belgium
     case slovakia
+    case chad
+    case turksAndCaicosIslands
+    case argentina
+    case gibraltar
+    case latvia
+    case netherlands
+    case serbia
+    case caribbeanNetherlands
+    case coteDIvoire
+    case somalia
+    case luxembourg
+    case holySeeVaticanCityState
+    case pakistan
+    case cuba
+    case vietnam
+    case bahrain
+    case greece
+    case antiguaAndBarbuda
+    case paraguay
+    case martinique
+    case jordan
+    case faroeIslands
+    case montserrat
+    case czechia
+    case brunei
+    case kuwait
+    case zambia
+    case montenegro
+    case sudan
+    case suriname
+    case isleOfMan
+    case switzerland
+    case cambodia
+    case france
+    case angola
+    case sKorea
+    case benin
+    case portugal
+    case oman
+    case denmark
+    case palestine
+    case dominicanRepublic
+    case uganda
+    case bosnia
+    case sintMaarten
+    case romania
+    case colombia
+    case yemen
+    case monaco
+    case guatemala
+    case channelIslands
+    case mayotte
+    case burkinaFaso
+    case aruba
+    case taiwan
+    case zimbabwe
+    case poland
+    case westernSahara
+    case algeria
+    case nigeria
+    case malta
+    case timorLeste
+    case drc
+    case lithuania
+    case bermuda
+    case cyprus
+    case jamaica
+    case mauritania
+    case senegal
+    case caboVerde
+    case tajikistan
+    case usa
+    case moldova
+    case reunion
+    case namibia
+    case eritrea
+    case saintVincentAndTheGrenadines
+    case italy
+    case congo
+    case china
+    case southAfrica
+    case iceland
+    case lebanon
+    case kenya
+    case uruguay
+    case mongolia
+    case tanzania
+    case albania
+    case austria
+    case macedonia
+    case guadeloupe
+    case costaRica
+    case newZealand
+    case mexico
+    case stBarth
+    case saintLucia
+    case rwanda
+    case venezuela
+    case croatia
+    case saudiArabia
+    case marshallIslands
+    case diamondPrincess
+    case peru
+    case ukraine
+    case maldives
+    case madagascar
+    case laoPeopleSDemocraticRepublic
+    case belgium
+    case caymanIslands
+    case ethiopia
+    case mali
+    case armenia
+    case hongKong
+    case togo
     /// Auto generated constant for unknown enum values
     case __unknown(RawValue)
 
     public init?(rawValue: RawValue) {
       switch rawValue {
-        case "TurksAndCaicosIslands": self = .turksAndCaicosIslands
-        case "DominicanRepublic": self = .dominicanRepublic
-        case "Greece": self = .greece
-        case "Senegal": self = .senegal
-        case "Panama": self = .panama
-        case "SyrianArabRepublic": self = .syrianArabRepublic
-        case "Ethiopia": self = .ethiopia
-        case "Fiji": self = .fiji
-        case "Kazakhstan": self = .kazakhstan
-        case "Brazil": self = .brazil
-        case "LibyanArabJamahiriya": self = .libyanArabJamahiriya
-        case "Lithuania": self = .lithuania
-        case "Andorra": self = .andorra
-        case "TrinidadAndTobago": self = .trinidadAndTobago
-        case "SaintKittsAndNevis": self = .saintKittsAndNevis
-        case "Brunei": self = .brunei
-        case "Argentina": self = .argentina
-        case "Finland": self = .finland
-        case "CostaRica": self = .costaRica
-        case "Portugal": self = .portugal
-        case "Rwanda": self = .rwanda
-        case "Australia": self = .australia
-        case "GuineaBissau": self = .guineaBissau
-        case "Gabon": self = .gabon
-        case "SaintLucia": self = .saintLucia
-        case "Sudan": self = .sudan
-        case "Yemen": self = .yemen
-        case "Barbados": self = .barbados
-        case "Guyana": self = .guyana
-        case "Ecuador": self = .ecuador
-        case "Macao": self = .macao
-        case "Colombia": self = .colombia
-        case "Poland": self = .poland
-        case "SanMarino": self = .sanMarino
-        case "Swaziland": self = .swaziland
-        case "Venezuela": self = .venezuela
-        case "Cambodia": self = .cambodia
-        case "WesternSahara": self = .westernSahara
-        case "Kenya": self = .kenya
-        case "Turkey": self = .turkey
-        case "Malawi": self = .malawi
-        case "Tajikistan": self = .tajikistan
-        case "Nicaragua": self = .nicaragua
-        case "Israel": self = .israel
-        case "Bangladesh": self = .bangladesh
-        case "SKorea": self = .sKorea
-        case "Chad": self = .chad
-        case "Zimbabwe": self = .zimbabwe
-        case "Montserrat": self = .montserrat
-        case "Comoros": self = .comoros
-        case "Uruguay": self = .uruguay
-        case "Switzerland": self = .switzerland
-        case "Cuba": self = .cuba
-        case "Jordan": self = .jordan
-        case "Congo": self = .congo
-        case "Uganda": self = .uganda
-        case "Greenland": self = .greenland
-        case "SouthAfrica": self = .southAfrica
-        case "ElSalvador": self = .elSalvador
-        case "Grenada": self = .grenada
-        case "Suriname": self = .suriname
-        case "Mauritius": self = .mauritius
-        case "Malta": self = .malta
-        case "Ghana": self = .ghana
-        case "Latvia": self = .latvia
-        case "Paraguay": self = .paraguay
-        case "Niger": self = .niger
-        case "Guinea": self = .guinea
-        case "Taiwan": self = .taiwan
-        case "PapuaNewGuinea": self = .papuaNewGuinea
-        case "Togo": self = .togo
-        case "Liechtenstein": self = .liechtenstein
-        case "Ukraine": self = .ukraine
-        case "EquatorialGuinea": self = .equatorialGuinea
-        case "Spain": self = .spain
-        case "Madagascar": self = .madagascar
-        case "Georgia": self = .georgia
-        case "Montenegro": self = .montenegro
-        case "Belize": self = .belize
-        case "Thailand": self = .thailand
-        case "Armenia": self = .armenia
-        case "Usa": self = .usa
-        case "Maldives": self = .maldives
-        case "Drc": self = .drc
-        case "Gambia": self = .gambia
-        case "Kuwait": self = .kuwait
-        case "Bhutan": self = .bhutan
-        case "Mongolia": self = .mongolia
-        case "Liberia": self = .liberia
-        case "Nepal": self = .nepal
-        case "MsZaandam": self = .msZaandam
-        case "Moldova": self = .moldova
-        case "Oman": self = .oman
-        case "Pakistan": self = .pakistan
-        case "CoteDIvoire": self = .coteDIvoire
-        case "Monaco": self = .monaco
-        case "Curacao": self = .curacao
-        case "Bosnia": self = .bosnia
-        case "Albania": self = .albania
-        case "SaintPierreMiquelon": self = .saintPierreMiquelon
-        case "Mali": self = .mali
-        case "Netherlands": self = .netherlands
-        case "StBarth": self = .stBarth
-        case "BritishVirginIslands": self = .britishVirginIslands
-        case "France": self = .france
-        case "Croatia": self = .croatia
-        case "FalklandIslandsMalvinas": self = .falklandIslandsMalvinas
-        case "Bolivia": self = .bolivia
-        case "Bermuda": self = .bermuda
-        case "Bahrain": self = .bahrain
-        case "Palestine": self = .palestine
-        case "Japan": self = .japan
-        case "Azerbaijan": self = .azerbaijan
-        case "Hungary": self = .hungary
-        case "Kyrgyzstan": self = .kyrgyzstan
-        case "Cameroon": self = .cameroon
-        case "Algeria": self = .algeria
         case "Haiti": self = .haiti
-        case "Myanmar": self = .myanmar
-        case "Macedonia": self = .macedonia
-        case "Malaysia": self = .malaysia
-        case "Russia": self = .russia
-        case "Sweden": self = .sweden
-        case "Eritrea": self = .eritrea
-        case "Gibraltar": self = .gibraltar
-        case "Lebanon": self = .lebanon
-        case "HongKong": self = .hongKong
-        case "LaoPeopleSDemocraticRepublic": self = .laoPeopleSDemocraticRepublic
-        case "Morocco": self = .morocco
-        case "Tanzania": self = .tanzania
-        case "Botswana": self = .botswana
-        case "Egypt": self = .egypt
-        case "SriLanka": self = .sriLanka
-        case "Czechia": self = .czechia
-        case "CaboVerde": self = .caboVerde
-        case "Romania": self = .romania
-        case "Tunisia": self = .tunisia
-        case "SintMaarten": self = .sintMaarten
-        case "Slovenia": self = .slovenia
-        case "Singapore": self = .singapore
-        case "Namibia": self = .namibia
-        case "Estonia": self = .estonia
-        case "Mauritania": self = .mauritania
-        case "Italy": self = .italy
-        case "Iceland": self = .iceland
-        case "Afghanistan": self = .afghanistan
-        case "Bulgaria": self = .bulgaria
-        case "DiamondPrincess": self = .diamondPrincess
-        case "China": self = .china
-        case "Belarus": self = .belarus
-        case "FrenchPolynesia": self = .frenchPolynesia
-        case "Peru": self = .peru
-        case "ChannelIslands": self = .channelIslands
-        case "Bahamas": self = .bahamas
-        case "Canada": self = .canada
-        case "Honduras": self = .honduras
-        case "NewZealand": self = .newZealand
-        case "Iraq": self = .iraq
-        case "SaoTomeAndPrincipe": self = .saoTomeAndPrincipe
-        case "Luxembourg": self = .luxembourg
-        case "Dominica": self = .dominica
-        case "FrenchGuiana": self = .frenchGuiana
-        case "CaymanIslands": self = .caymanIslands
-        case "Benin": self = .benin
-        case "CaribbeanNetherlands": self = .caribbeanNetherlands
-        case "TimorLeste": self = .timorLeste
-        case "Guatemala": self = .guatemala
-        case "SaintMartin": self = .saintMartin
-        case "Vietnam": self = .vietnam
-        case "Martinique": self = .martinique
-        case "Djibouti": self = .djibouti
-        case "HolySeeVaticanCityState": self = .holySeeVaticanCityState
-        case "Angola": self = .angola
-        case "Qatar": self = .qatar
-        case "Reunion": self = .reunion
-        case "SaintVincentAndTheGrenadines": self = .saintVincentAndTheGrenadines
-        case "Austria": self = .austria
-        case "Seychelles": self = .seychelles
-        case "SaudiArabia": self = .saudiArabia
-        case "Somalia": self = .somalia
-        case "Norway": self = .norway
-        case "Guadeloupe": self = .guadeloupe
-        case "Chile": self = .chile
-        case "Mexico": self = .mexico
-        case "India": self = .india
-        case "Germany": self = .germany
-        case "BurkinaFaso": self = .burkinaFaso
-        case "Anguilla": self = .anguilla
-        case "Lesotho": self = .lesotho
-        case "Denmark": self = .denmark
-        case "SouthSudan": self = .southSudan
-        case "NewCaledonia": self = .newCaledonia
-        case "Iran": self = .iran
-        case "Mayotte": self = .mayotte
-        case "Cyprus": self = .cyprus
-        case "Mozambique": self = .mozambique
-        case "Nigeria": self = .nigeria
-        case "Aruba": self = .aruba
-        case "AntiguaAndBarbuda": self = .antiguaAndBarbuda
-        case "Zambia": self = .zambia
-        case "Serbia": self = .serbia
-        case "Uk": self = .uk
-        case "Indonesia": self = .indonesia
-        case "IsleOfMan": self = .isleOfMan
-        case "Uzbekistan": self = .uzbekistan
-        case "FaroeIslands": self = .faroeIslands
-        case "Ireland": self = .ireland
-        case "Jamaica": self = .jamaica
-        case "Burundi": self = .burundi
+        case "SolomonIslands": self = .solomonIslands
+        case "LibyanArabJamahiriya": self = .libyanArabJamahiriya
         case "CentralAfricanRepublic": self = .centralAfricanRepublic
-        case "Philippines": self = .philippines
+        case "WallisAndFutuna": self = .wallisAndFutuna
+        case "Egypt": self = .egypt
+        case "FrenchPolynesia": self = .frenchPolynesia
+        case "EquatorialGuinea": self = .equatorialGuinea
+        case "Curacao": self = .curacao
+        case "Samoa": self = .samoa
+        case "Honduras": self = .honduras
+        case "Mozambique": self = .mozambique
+        case "MsZaandam": self = .msZaandam
+        case "Slovenia": self = .slovenia
+        case "Bhutan": self = .bhutan
+        case "Morocco": self = .morocco
+        case "Bulgaria": self = .bulgaria
+        case "SanMarino": self = .sanMarino
+        case "Guinea": self = .guinea
+        case "Iran": self = .iran
+        case "Burundi": self = .burundi
+        case "Lesotho": self = .lesotho
+        case "Mauritius": self = .mauritius
+        case "Ireland": self = .ireland
+        case "PapuaNewGuinea": self = .papuaNewGuinea
+        case "Swaziland": self = .swaziland
+        case "SaintKittsAndNevis": self = .saintKittsAndNevis
+        case "Seychelles": self = .seychelles
+        case "Japan": self = .japan
+        case "Vanuatu": self = .vanuatu
+        case "Uk": self = .uk
+        case "Thailand": self = .thailand
+        case "Nepal": self = .nepal
+        case "SriLanka": self = .sriLanka
+        case "Barbados": self = .barbados
+        case "SyrianArabRepublic": self = .syrianArabRepublic
+        case "Nicaragua": self = .nicaragua
+        case "Chile": self = .chile
+        case "Australia": self = .australia
+        case "Andorra": self = .andorra
+        case "Bangladesh": self = .bangladesh
+        case "SaoTomeAndPrincipe": self = .saoTomeAndPrincipe
+        case "Estonia": self = .estonia
         case "Uae": self = .uae
+        case "Norway": self = .norway
+        case "Philippines": self = .philippines
+        case "Macao": self = .macao
+        case "Fiji": self = .fiji
+        case "Russia": self = .russia
+        case "Panama": self = .panama
+        case "Myanmar": self = .myanmar
+        case "Kyrgyzstan": self = .kyrgyzstan
+        case "Singapore": self = .singapore
+        case "Malaysia": self = .malaysia
+        case "ElSalvador": self = .elSalvador
+        case "Iraq": self = .iraq
+        case "Anguilla": self = .anguilla
+        case "NewCaledonia": self = .newCaledonia
+        case "FrenchGuiana": self = .frenchGuiana
+        case "Niger": self = .niger
+        case "Dominica": self = .dominica
+        case "Belize": self = .belize
+        case "Georgia": self = .georgia
+        case "Bahamas": self = .bahamas
+        case "Sweden": self = .sweden
+        case "Liberia": self = .liberia
+        case "Ecuador": self = .ecuador
+        case "Indonesia": self = .indonesia
+        case "SaintPierreMiquelon": self = .saintPierreMiquelon
+        case "Brazil": self = .brazil
+        case "Tunisia": self = .tunisia
+        case "Ghana": self = .ghana
+        case "India": self = .india
+        case "Gambia": self = .gambia
+        case "Qatar": self = .qatar
+        case "TrinidadAndTobago": self = .trinidadAndTobago
+        case "Djibouti": self = .djibouti
+        case "Turkey": self = .turkey
+        case "Liechtenstein": self = .liechtenstein
+        case "Grenada": self = .grenada
+        case "BritishVirginIslands": self = .britishVirginIslands
+        case "Comoros": self = .comoros
+        case "Cameroon": self = .cameroon
+        case "Azerbaijan": self = .azerbaijan
+        case "SouthSudan": self = .southSudan
+        case "Kazakhstan": self = .kazakhstan
+        case "FalklandIslandsMalvinas": self = .falklandIslandsMalvinas
+        case "Belarus": self = .belarus
+        case "Greenland": self = .greenland
+        case "Botswana": self = .botswana
+        case "Israel": self = .israel
+        case "Malawi": self = .malawi
+        case "Micronesia": self = .micronesia
+        case "Spain": self = .spain
+        case "Hungary": self = .hungary
+        case "Uzbekistan": self = .uzbekistan
+        case "GuineaBissau": self = .guineaBissau
+        case "Germany": self = .germany
+        case "Guyana": self = .guyana
+        case "Bolivia": self = .bolivia
+        case "Gabon": self = .gabon
+        case "Finland": self = .finland
+        case "Canada": self = .canada
+        case "Afghanistan": self = .afghanistan
+        case "SaintMartin": self = .saintMartin
         case "SierraLeone": self = .sierraLeone
-        case "Belgium": self = .belgium
         case "Slovakia": self = .slovakia
+        case "Chad": self = .chad
+        case "TurksAndCaicosIslands": self = .turksAndCaicosIslands
+        case "Argentina": self = .argentina
+        case "Gibraltar": self = .gibraltar
+        case "Latvia": self = .latvia
+        case "Netherlands": self = .netherlands
+        case "Serbia": self = .serbia
+        case "CaribbeanNetherlands": self = .caribbeanNetherlands
+        case "CoteDIvoire": self = .coteDIvoire
+        case "Somalia": self = .somalia
+        case "Luxembourg": self = .luxembourg
+        case "HolySeeVaticanCityState": self = .holySeeVaticanCityState
+        case "Pakistan": self = .pakistan
+        case "Cuba": self = .cuba
+        case "Vietnam": self = .vietnam
+        case "Bahrain": self = .bahrain
+        case "Greece": self = .greece
+        case "AntiguaAndBarbuda": self = .antiguaAndBarbuda
+        case "Paraguay": self = .paraguay
+        case "Martinique": self = .martinique
+        case "Jordan": self = .jordan
+        case "FaroeIslands": self = .faroeIslands
+        case "Montserrat": self = .montserrat
+        case "Czechia": self = .czechia
+        case "Brunei": self = .brunei
+        case "Kuwait": self = .kuwait
+        case "Zambia": self = .zambia
+        case "Montenegro": self = .montenegro
+        case "Sudan": self = .sudan
+        case "Suriname": self = .suriname
+        case "IsleOfMan": self = .isleOfMan
+        case "Switzerland": self = .switzerland
+        case "Cambodia": self = .cambodia
+        case "France": self = .france
+        case "Angola": self = .angola
+        case "SKorea": self = .sKorea
+        case "Benin": self = .benin
+        case "Portugal": self = .portugal
+        case "Oman": self = .oman
+        case "Denmark": self = .denmark
+        case "Palestine": self = .palestine
+        case "DominicanRepublic": self = .dominicanRepublic
+        case "Uganda": self = .uganda
+        case "Bosnia": self = .bosnia
+        case "SintMaarten": self = .sintMaarten
+        case "Romania": self = .romania
+        case "Colombia": self = .colombia
+        case "Yemen": self = .yemen
+        case "Monaco": self = .monaco
+        case "Guatemala": self = .guatemala
+        case "ChannelIslands": self = .channelIslands
+        case "Mayotte": self = .mayotte
+        case "BurkinaFaso": self = .burkinaFaso
+        case "Aruba": self = .aruba
+        case "Taiwan": self = .taiwan
+        case "Zimbabwe": self = .zimbabwe
+        case "Poland": self = .poland
+        case "WesternSahara": self = .westernSahara
+        case "Algeria": self = .algeria
+        case "Nigeria": self = .nigeria
+        case "Malta": self = .malta
+        case "TimorLeste": self = .timorLeste
+        case "Drc": self = .drc
+        case "Lithuania": self = .lithuania
+        case "Bermuda": self = .bermuda
+        case "Cyprus": self = .cyprus
+        case "Jamaica": self = .jamaica
+        case "Mauritania": self = .mauritania
+        case "Senegal": self = .senegal
+        case "CaboVerde": self = .caboVerde
+        case "Tajikistan": self = .tajikistan
+        case "Usa": self = .usa
+        case "Moldova": self = .moldova
+        case "Reunion": self = .reunion
+        case "Namibia": self = .namibia
+        case "Eritrea": self = .eritrea
+        case "SaintVincentAndTheGrenadines": self = .saintVincentAndTheGrenadines
+        case "Italy": self = .italy
+        case "Congo": self = .congo
+        case "China": self = .china
+        case "SouthAfrica": self = .southAfrica
+        case "Iceland": self = .iceland
+        case "Lebanon": self = .lebanon
+        case "Kenya": self = .kenya
+        case "Uruguay": self = .uruguay
+        case "Mongolia": self = .mongolia
+        case "Tanzania": self = .tanzania
+        case "Albania": self = .albania
+        case "Austria": self = .austria
+        case "Macedonia": self = .macedonia
+        case "Guadeloupe": self = .guadeloupe
+        case "CostaRica": self = .costaRica
+        case "NewZealand": self = .newZealand
+        case "Mexico": self = .mexico
+        case "StBarth": self = .stBarth
+        case "SaintLucia": self = .saintLucia
+        case "Rwanda": self = .rwanda
+        case "Venezuela": self = .venezuela
+        case "Croatia": self = .croatia
+        case "SaudiArabia": self = .saudiArabia
+        case "MarshallIslands": self = .marshallIslands
+        case "DiamondPrincess": self = .diamondPrincess
+        case "Peru": self = .peru
+        case "Ukraine": self = .ukraine
+        case "Maldives": self = .maldives
+        case "Madagascar": self = .madagascar
+        case "LaoPeopleSDemocraticRepublic": self = .laoPeopleSDemocraticRepublic
+        case "Belgium": self = .belgium
+        case "CaymanIslands": self = .caymanIslands
+        case "Ethiopia": self = .ethiopia
+        case "Mali": self = .mali
+        case "Armenia": self = .armenia
+        case "HongKong": self = .hongKong
+        case "Togo": self = .togo
         default: self = .__unknown(rawValue)
       }
     }
 
     public var rawValue: RawValue {
       switch self {
-        case .turksAndCaicosIslands: return "TurksAndCaicosIslands"
-        case .dominicanRepublic: return "DominicanRepublic"
-        case .greece: return "Greece"
-        case .senegal: return "Senegal"
-        case .panama: return "Panama"
-        case .syrianArabRepublic: return "SyrianArabRepublic"
-        case .ethiopia: return "Ethiopia"
-        case .fiji: return "Fiji"
-        case .kazakhstan: return "Kazakhstan"
-        case .brazil: return "Brazil"
-        case .libyanArabJamahiriya: return "LibyanArabJamahiriya"
-        case .lithuania: return "Lithuania"
-        case .andorra: return "Andorra"
-        case .trinidadAndTobago: return "TrinidadAndTobago"
-        case .saintKittsAndNevis: return "SaintKittsAndNevis"
-        case .brunei: return "Brunei"
-        case .argentina: return "Argentina"
-        case .finland: return "Finland"
-        case .costaRica: return "CostaRica"
-        case .portugal: return "Portugal"
-        case .rwanda: return "Rwanda"
-        case .australia: return "Australia"
-        case .guineaBissau: return "GuineaBissau"
-        case .gabon: return "Gabon"
-        case .saintLucia: return "SaintLucia"
-        case .sudan: return "Sudan"
-        case .yemen: return "Yemen"
-        case .barbados: return "Barbados"
-        case .guyana: return "Guyana"
-        case .ecuador: return "Ecuador"
-        case .macao: return "Macao"
-        case .colombia: return "Colombia"
-        case .poland: return "Poland"
-        case .sanMarino: return "SanMarino"
-        case .swaziland: return "Swaziland"
-        case .venezuela: return "Venezuela"
-        case .cambodia: return "Cambodia"
-        case .westernSahara: return "WesternSahara"
-        case .kenya: return "Kenya"
-        case .turkey: return "Turkey"
-        case .malawi: return "Malawi"
-        case .tajikistan: return "Tajikistan"
-        case .nicaragua: return "Nicaragua"
-        case .israel: return "Israel"
-        case .bangladesh: return "Bangladesh"
-        case .sKorea: return "SKorea"
-        case .chad: return "Chad"
-        case .zimbabwe: return "Zimbabwe"
-        case .montserrat: return "Montserrat"
-        case .comoros: return "Comoros"
-        case .uruguay: return "Uruguay"
-        case .switzerland: return "Switzerland"
-        case .cuba: return "Cuba"
-        case .jordan: return "Jordan"
-        case .congo: return "Congo"
-        case .uganda: return "Uganda"
-        case .greenland: return "Greenland"
-        case .southAfrica: return "SouthAfrica"
-        case .elSalvador: return "ElSalvador"
-        case .grenada: return "Grenada"
-        case .suriname: return "Suriname"
-        case .mauritius: return "Mauritius"
-        case .malta: return "Malta"
-        case .ghana: return "Ghana"
-        case .latvia: return "Latvia"
-        case .paraguay: return "Paraguay"
-        case .niger: return "Niger"
-        case .guinea: return "Guinea"
-        case .taiwan: return "Taiwan"
-        case .papuaNewGuinea: return "PapuaNewGuinea"
-        case .togo: return "Togo"
-        case .liechtenstein: return "Liechtenstein"
-        case .ukraine: return "Ukraine"
-        case .equatorialGuinea: return "EquatorialGuinea"
-        case .spain: return "Spain"
-        case .madagascar: return "Madagascar"
-        case .georgia: return "Georgia"
-        case .montenegro: return "Montenegro"
-        case .belize: return "Belize"
-        case .thailand: return "Thailand"
-        case .armenia: return "Armenia"
-        case .usa: return "Usa"
-        case .maldives: return "Maldives"
-        case .drc: return "Drc"
-        case .gambia: return "Gambia"
-        case .kuwait: return "Kuwait"
-        case .bhutan: return "Bhutan"
-        case .mongolia: return "Mongolia"
-        case .liberia: return "Liberia"
-        case .nepal: return "Nepal"
-        case .msZaandam: return "MsZaandam"
-        case .moldova: return "Moldova"
-        case .oman: return "Oman"
-        case .pakistan: return "Pakistan"
-        case .coteDIvoire: return "CoteDIvoire"
-        case .monaco: return "Monaco"
-        case .curacao: return "Curacao"
-        case .bosnia: return "Bosnia"
-        case .albania: return "Albania"
-        case .saintPierreMiquelon: return "SaintPierreMiquelon"
-        case .mali: return "Mali"
-        case .netherlands: return "Netherlands"
-        case .stBarth: return "StBarth"
-        case .britishVirginIslands: return "BritishVirginIslands"
-        case .france: return "France"
-        case .croatia: return "Croatia"
-        case .falklandIslandsMalvinas: return "FalklandIslandsMalvinas"
-        case .bolivia: return "Bolivia"
-        case .bermuda: return "Bermuda"
-        case .bahrain: return "Bahrain"
-        case .palestine: return "Palestine"
-        case .japan: return "Japan"
-        case .azerbaijan: return "Azerbaijan"
-        case .hungary: return "Hungary"
-        case .kyrgyzstan: return "Kyrgyzstan"
-        case .cameroon: return "Cameroon"
-        case .algeria: return "Algeria"
         case .haiti: return "Haiti"
-        case .myanmar: return "Myanmar"
-        case .macedonia: return "Macedonia"
-        case .malaysia: return "Malaysia"
-        case .russia: return "Russia"
-        case .sweden: return "Sweden"
-        case .eritrea: return "Eritrea"
-        case .gibraltar: return "Gibraltar"
-        case .lebanon: return "Lebanon"
-        case .hongKong: return "HongKong"
-        case .laoPeopleSDemocraticRepublic: return "LaoPeopleSDemocraticRepublic"
-        case .morocco: return "Morocco"
-        case .tanzania: return "Tanzania"
-        case .botswana: return "Botswana"
-        case .egypt: return "Egypt"
-        case .sriLanka: return "SriLanka"
-        case .czechia: return "Czechia"
-        case .caboVerde: return "CaboVerde"
-        case .romania: return "Romania"
-        case .tunisia: return "Tunisia"
-        case .sintMaarten: return "SintMaarten"
-        case .slovenia: return "Slovenia"
-        case .singapore: return "Singapore"
-        case .namibia: return "Namibia"
-        case .estonia: return "Estonia"
-        case .mauritania: return "Mauritania"
-        case .italy: return "Italy"
-        case .iceland: return "Iceland"
-        case .afghanistan: return "Afghanistan"
-        case .bulgaria: return "Bulgaria"
-        case .diamondPrincess: return "DiamondPrincess"
-        case .china: return "China"
-        case .belarus: return "Belarus"
-        case .frenchPolynesia: return "FrenchPolynesia"
-        case .peru: return "Peru"
-        case .channelIslands: return "ChannelIslands"
-        case .bahamas: return "Bahamas"
-        case .canada: return "Canada"
-        case .honduras: return "Honduras"
-        case .newZealand: return "NewZealand"
-        case .iraq: return "Iraq"
-        case .saoTomeAndPrincipe: return "SaoTomeAndPrincipe"
-        case .luxembourg: return "Luxembourg"
-        case .dominica: return "Dominica"
-        case .frenchGuiana: return "FrenchGuiana"
-        case .caymanIslands: return "CaymanIslands"
-        case .benin: return "Benin"
-        case .caribbeanNetherlands: return "CaribbeanNetherlands"
-        case .timorLeste: return "TimorLeste"
-        case .guatemala: return "Guatemala"
-        case .saintMartin: return "SaintMartin"
-        case .vietnam: return "Vietnam"
-        case .martinique: return "Martinique"
-        case .djibouti: return "Djibouti"
-        case .holySeeVaticanCityState: return "HolySeeVaticanCityState"
-        case .angola: return "Angola"
-        case .qatar: return "Qatar"
-        case .reunion: return "Reunion"
-        case .saintVincentAndTheGrenadines: return "SaintVincentAndTheGrenadines"
-        case .austria: return "Austria"
-        case .seychelles: return "Seychelles"
-        case .saudiArabia: return "SaudiArabia"
-        case .somalia: return "Somalia"
-        case .norway: return "Norway"
-        case .guadeloupe: return "Guadeloupe"
-        case .chile: return "Chile"
-        case .mexico: return "Mexico"
-        case .india: return "India"
-        case .germany: return "Germany"
-        case .burkinaFaso: return "BurkinaFaso"
-        case .anguilla: return "Anguilla"
-        case .lesotho: return "Lesotho"
-        case .denmark: return "Denmark"
-        case .southSudan: return "SouthSudan"
-        case .newCaledonia: return "NewCaledonia"
-        case .iran: return "Iran"
-        case .mayotte: return "Mayotte"
-        case .cyprus: return "Cyprus"
-        case .mozambique: return "Mozambique"
-        case .nigeria: return "Nigeria"
-        case .aruba: return "Aruba"
-        case .antiguaAndBarbuda: return "AntiguaAndBarbuda"
-        case .zambia: return "Zambia"
-        case .serbia: return "Serbia"
-        case .uk: return "Uk"
-        case .indonesia: return "Indonesia"
-        case .isleOfMan: return "IsleOfMan"
-        case .uzbekistan: return "Uzbekistan"
-        case .faroeIslands: return "FaroeIslands"
-        case .ireland: return "Ireland"
-        case .jamaica: return "Jamaica"
-        case .burundi: return "Burundi"
+        case .solomonIslands: return "SolomonIslands"
+        case .libyanArabJamahiriya: return "LibyanArabJamahiriya"
         case .centralAfricanRepublic: return "CentralAfricanRepublic"
-        case .philippines: return "Philippines"
+        case .wallisAndFutuna: return "WallisAndFutuna"
+        case .egypt: return "Egypt"
+        case .frenchPolynesia: return "FrenchPolynesia"
+        case .equatorialGuinea: return "EquatorialGuinea"
+        case .curacao: return "Curacao"
+        case .samoa: return "Samoa"
+        case .honduras: return "Honduras"
+        case .mozambique: return "Mozambique"
+        case .msZaandam: return "MsZaandam"
+        case .slovenia: return "Slovenia"
+        case .bhutan: return "Bhutan"
+        case .morocco: return "Morocco"
+        case .bulgaria: return "Bulgaria"
+        case .sanMarino: return "SanMarino"
+        case .guinea: return "Guinea"
+        case .iran: return "Iran"
+        case .burundi: return "Burundi"
+        case .lesotho: return "Lesotho"
+        case .mauritius: return "Mauritius"
+        case .ireland: return "Ireland"
+        case .papuaNewGuinea: return "PapuaNewGuinea"
+        case .swaziland: return "Swaziland"
+        case .saintKittsAndNevis: return "SaintKittsAndNevis"
+        case .seychelles: return "Seychelles"
+        case .japan: return "Japan"
+        case .vanuatu: return "Vanuatu"
+        case .uk: return "Uk"
+        case .thailand: return "Thailand"
+        case .nepal: return "Nepal"
+        case .sriLanka: return "SriLanka"
+        case .barbados: return "Barbados"
+        case .syrianArabRepublic: return "SyrianArabRepublic"
+        case .nicaragua: return "Nicaragua"
+        case .chile: return "Chile"
+        case .australia: return "Australia"
+        case .andorra: return "Andorra"
+        case .bangladesh: return "Bangladesh"
+        case .saoTomeAndPrincipe: return "SaoTomeAndPrincipe"
+        case .estonia: return "Estonia"
         case .uae: return "Uae"
+        case .norway: return "Norway"
+        case .philippines: return "Philippines"
+        case .macao: return "Macao"
+        case .fiji: return "Fiji"
+        case .russia: return "Russia"
+        case .panama: return "Panama"
+        case .myanmar: return "Myanmar"
+        case .kyrgyzstan: return "Kyrgyzstan"
+        case .singapore: return "Singapore"
+        case .malaysia: return "Malaysia"
+        case .elSalvador: return "ElSalvador"
+        case .iraq: return "Iraq"
+        case .anguilla: return "Anguilla"
+        case .newCaledonia: return "NewCaledonia"
+        case .frenchGuiana: return "FrenchGuiana"
+        case .niger: return "Niger"
+        case .dominica: return "Dominica"
+        case .belize: return "Belize"
+        case .georgia: return "Georgia"
+        case .bahamas: return "Bahamas"
+        case .sweden: return "Sweden"
+        case .liberia: return "Liberia"
+        case .ecuador: return "Ecuador"
+        case .indonesia: return "Indonesia"
+        case .saintPierreMiquelon: return "SaintPierreMiquelon"
+        case .brazil: return "Brazil"
+        case .tunisia: return "Tunisia"
+        case .ghana: return "Ghana"
+        case .india: return "India"
+        case .gambia: return "Gambia"
+        case .qatar: return "Qatar"
+        case .trinidadAndTobago: return "TrinidadAndTobago"
+        case .djibouti: return "Djibouti"
+        case .turkey: return "Turkey"
+        case .liechtenstein: return "Liechtenstein"
+        case .grenada: return "Grenada"
+        case .britishVirginIslands: return "BritishVirginIslands"
+        case .comoros: return "Comoros"
+        case .cameroon: return "Cameroon"
+        case .azerbaijan: return "Azerbaijan"
+        case .southSudan: return "SouthSudan"
+        case .kazakhstan: return "Kazakhstan"
+        case .falklandIslandsMalvinas: return "FalklandIslandsMalvinas"
+        case .belarus: return "Belarus"
+        case .greenland: return "Greenland"
+        case .botswana: return "Botswana"
+        case .israel: return "Israel"
+        case .malawi: return "Malawi"
+        case .micronesia: return "Micronesia"
+        case .spain: return "Spain"
+        case .hungary: return "Hungary"
+        case .uzbekistan: return "Uzbekistan"
+        case .guineaBissau: return "GuineaBissau"
+        case .germany: return "Germany"
+        case .guyana: return "Guyana"
+        case .bolivia: return "Bolivia"
+        case .gabon: return "Gabon"
+        case .finland: return "Finland"
+        case .canada: return "Canada"
+        case .afghanistan: return "Afghanistan"
+        case .saintMartin: return "SaintMartin"
         case .sierraLeone: return "SierraLeone"
-        case .belgium: return "Belgium"
         case .slovakia: return "Slovakia"
+        case .chad: return "Chad"
+        case .turksAndCaicosIslands: return "TurksAndCaicosIslands"
+        case .argentina: return "Argentina"
+        case .gibraltar: return "Gibraltar"
+        case .latvia: return "Latvia"
+        case .netherlands: return "Netherlands"
+        case .serbia: return "Serbia"
+        case .caribbeanNetherlands: return "CaribbeanNetherlands"
+        case .coteDIvoire: return "CoteDIvoire"
+        case .somalia: return "Somalia"
+        case .luxembourg: return "Luxembourg"
+        case .holySeeVaticanCityState: return "HolySeeVaticanCityState"
+        case .pakistan: return "Pakistan"
+        case .cuba: return "Cuba"
+        case .vietnam: return "Vietnam"
+        case .bahrain: return "Bahrain"
+        case .greece: return "Greece"
+        case .antiguaAndBarbuda: return "AntiguaAndBarbuda"
+        case .paraguay: return "Paraguay"
+        case .martinique: return "Martinique"
+        case .jordan: return "Jordan"
+        case .faroeIslands: return "FaroeIslands"
+        case .montserrat: return "Montserrat"
+        case .czechia: return "Czechia"
+        case .brunei: return "Brunei"
+        case .kuwait: return "Kuwait"
+        case .zambia: return "Zambia"
+        case .montenegro: return "Montenegro"
+        case .sudan: return "Sudan"
+        case .suriname: return "Suriname"
+        case .isleOfMan: return "IsleOfMan"
+        case .switzerland: return "Switzerland"
+        case .cambodia: return "Cambodia"
+        case .france: return "France"
+        case .angola: return "Angola"
+        case .sKorea: return "SKorea"
+        case .benin: return "Benin"
+        case .portugal: return "Portugal"
+        case .oman: return "Oman"
+        case .denmark: return "Denmark"
+        case .palestine: return "Palestine"
+        case .dominicanRepublic: return "DominicanRepublic"
+        case .uganda: return "Uganda"
+        case .bosnia: return "Bosnia"
+        case .sintMaarten: return "SintMaarten"
+        case .romania: return "Romania"
+        case .colombia: return "Colombia"
+        case .yemen: return "Yemen"
+        case .monaco: return "Monaco"
+        case .guatemala: return "Guatemala"
+        case .channelIslands: return "ChannelIslands"
+        case .mayotte: return "Mayotte"
+        case .burkinaFaso: return "BurkinaFaso"
+        case .aruba: return "Aruba"
+        case .taiwan: return "Taiwan"
+        case .zimbabwe: return "Zimbabwe"
+        case .poland: return "Poland"
+        case .westernSahara: return "WesternSahara"
+        case .algeria: return "Algeria"
+        case .nigeria: return "Nigeria"
+        case .malta: return "Malta"
+        case .timorLeste: return "TimorLeste"
+        case .drc: return "Drc"
+        case .lithuania: return "Lithuania"
+        case .bermuda: return "Bermuda"
+        case .cyprus: return "Cyprus"
+        case .jamaica: return "Jamaica"
+        case .mauritania: return "Mauritania"
+        case .senegal: return "Senegal"
+        case .caboVerde: return "CaboVerde"
+        case .tajikistan: return "Tajikistan"
+        case .usa: return "Usa"
+        case .moldova: return "Moldova"
+        case .reunion: return "Reunion"
+        case .namibia: return "Namibia"
+        case .eritrea: return "Eritrea"
+        case .saintVincentAndTheGrenadines: return "SaintVincentAndTheGrenadines"
+        case .italy: return "Italy"
+        case .congo: return "Congo"
+        case .china: return "China"
+        case .southAfrica: return "SouthAfrica"
+        case .iceland: return "Iceland"
+        case .lebanon: return "Lebanon"
+        case .kenya: return "Kenya"
+        case .uruguay: return "Uruguay"
+        case .mongolia: return "Mongolia"
+        case .tanzania: return "Tanzania"
+        case .albania: return "Albania"
+        case .austria: return "Austria"
+        case .macedonia: return "Macedonia"
+        case .guadeloupe: return "Guadeloupe"
+        case .costaRica: return "CostaRica"
+        case .newZealand: return "NewZealand"
+        case .mexico: return "Mexico"
+        case .stBarth: return "StBarth"
+        case .saintLucia: return "SaintLucia"
+        case .rwanda: return "Rwanda"
+        case .venezuela: return "Venezuela"
+        case .croatia: return "Croatia"
+        case .saudiArabia: return "SaudiArabia"
+        case .marshallIslands: return "MarshallIslands"
+        case .diamondPrincess: return "DiamondPrincess"
+        case .peru: return "Peru"
+        case .ukraine: return "Ukraine"
+        case .maldives: return "Maldives"
+        case .madagascar: return "Madagascar"
+        case .laoPeopleSDemocraticRepublic: return "LaoPeopleSDemocraticRepublic"
+        case .belgium: return "Belgium"
+        case .caymanIslands: return "CaymanIslands"
+        case .ethiopia: return "Ethiopia"
+        case .mali: return "Mali"
+        case .armenia: return "Armenia"
+        case .hongKong: return "HongKong"
+        case .togo: return "Togo"
         case .__unknown(let value): return value
       }
     }
 
     public static func == (lhs: CountryIdentifier, rhs: CountryIdentifier) -> Bool {
       switch (lhs, rhs) {
-        case (.turksAndCaicosIslands, .turksAndCaicosIslands): return true
-        case (.dominicanRepublic, .dominicanRepublic): return true
-        case (.greece, .greece): return true
-        case (.senegal, .senegal): return true
-        case (.panama, .panama): return true
-        case (.syrianArabRepublic, .syrianArabRepublic): return true
-        case (.ethiopia, .ethiopia): return true
-        case (.fiji, .fiji): return true
-        case (.kazakhstan, .kazakhstan): return true
-        case (.brazil, .brazil): return true
-        case (.libyanArabJamahiriya, .libyanArabJamahiriya): return true
-        case (.lithuania, .lithuania): return true
-        case (.andorra, .andorra): return true
-        case (.trinidadAndTobago, .trinidadAndTobago): return true
-        case (.saintKittsAndNevis, .saintKittsAndNevis): return true
-        case (.brunei, .brunei): return true
-        case (.argentina, .argentina): return true
-        case (.finland, .finland): return true
-        case (.costaRica, .costaRica): return true
-        case (.portugal, .portugal): return true
-        case (.rwanda, .rwanda): return true
-        case (.australia, .australia): return true
-        case (.guineaBissau, .guineaBissau): return true
-        case (.gabon, .gabon): return true
-        case (.saintLucia, .saintLucia): return true
-        case (.sudan, .sudan): return true
-        case (.yemen, .yemen): return true
-        case (.barbados, .barbados): return true
-        case (.guyana, .guyana): return true
-        case (.ecuador, .ecuador): return true
-        case (.macao, .macao): return true
-        case (.colombia, .colombia): return true
-        case (.poland, .poland): return true
-        case (.sanMarino, .sanMarino): return true
-        case (.swaziland, .swaziland): return true
-        case (.venezuela, .venezuela): return true
-        case (.cambodia, .cambodia): return true
-        case (.westernSahara, .westernSahara): return true
-        case (.kenya, .kenya): return true
-        case (.turkey, .turkey): return true
-        case (.malawi, .malawi): return true
-        case (.tajikistan, .tajikistan): return true
-        case (.nicaragua, .nicaragua): return true
-        case (.israel, .israel): return true
-        case (.bangladesh, .bangladesh): return true
-        case (.sKorea, .sKorea): return true
-        case (.chad, .chad): return true
-        case (.zimbabwe, .zimbabwe): return true
-        case (.montserrat, .montserrat): return true
-        case (.comoros, .comoros): return true
-        case (.uruguay, .uruguay): return true
-        case (.switzerland, .switzerland): return true
-        case (.cuba, .cuba): return true
-        case (.jordan, .jordan): return true
-        case (.congo, .congo): return true
-        case (.uganda, .uganda): return true
-        case (.greenland, .greenland): return true
-        case (.southAfrica, .southAfrica): return true
-        case (.elSalvador, .elSalvador): return true
-        case (.grenada, .grenada): return true
-        case (.suriname, .suriname): return true
-        case (.mauritius, .mauritius): return true
-        case (.malta, .malta): return true
-        case (.ghana, .ghana): return true
-        case (.latvia, .latvia): return true
-        case (.paraguay, .paraguay): return true
-        case (.niger, .niger): return true
-        case (.guinea, .guinea): return true
-        case (.taiwan, .taiwan): return true
-        case (.papuaNewGuinea, .papuaNewGuinea): return true
-        case (.togo, .togo): return true
-        case (.liechtenstein, .liechtenstein): return true
-        case (.ukraine, .ukraine): return true
-        case (.equatorialGuinea, .equatorialGuinea): return true
-        case (.spain, .spain): return true
-        case (.madagascar, .madagascar): return true
-        case (.georgia, .georgia): return true
-        case (.montenegro, .montenegro): return true
-        case (.belize, .belize): return true
-        case (.thailand, .thailand): return true
-        case (.armenia, .armenia): return true
-        case (.usa, .usa): return true
-        case (.maldives, .maldives): return true
-        case (.drc, .drc): return true
-        case (.gambia, .gambia): return true
-        case (.kuwait, .kuwait): return true
-        case (.bhutan, .bhutan): return true
-        case (.mongolia, .mongolia): return true
-        case (.liberia, .liberia): return true
-        case (.nepal, .nepal): return true
-        case (.msZaandam, .msZaandam): return true
-        case (.moldova, .moldova): return true
-        case (.oman, .oman): return true
-        case (.pakistan, .pakistan): return true
-        case (.coteDIvoire, .coteDIvoire): return true
-        case (.monaco, .monaco): return true
-        case (.curacao, .curacao): return true
-        case (.bosnia, .bosnia): return true
-        case (.albania, .albania): return true
-        case (.saintPierreMiquelon, .saintPierreMiquelon): return true
-        case (.mali, .mali): return true
-        case (.netherlands, .netherlands): return true
-        case (.stBarth, .stBarth): return true
-        case (.britishVirginIslands, .britishVirginIslands): return true
-        case (.france, .france): return true
-        case (.croatia, .croatia): return true
-        case (.falklandIslandsMalvinas, .falklandIslandsMalvinas): return true
-        case (.bolivia, .bolivia): return true
-        case (.bermuda, .bermuda): return true
-        case (.bahrain, .bahrain): return true
-        case (.palestine, .palestine): return true
-        case (.japan, .japan): return true
-        case (.azerbaijan, .azerbaijan): return true
-        case (.hungary, .hungary): return true
-        case (.kyrgyzstan, .kyrgyzstan): return true
-        case (.cameroon, .cameroon): return true
-        case (.algeria, .algeria): return true
         case (.haiti, .haiti): return true
-        case (.myanmar, .myanmar): return true
-        case (.macedonia, .macedonia): return true
-        case (.malaysia, .malaysia): return true
-        case (.russia, .russia): return true
-        case (.sweden, .sweden): return true
-        case (.eritrea, .eritrea): return true
-        case (.gibraltar, .gibraltar): return true
-        case (.lebanon, .lebanon): return true
-        case (.hongKong, .hongKong): return true
-        case (.laoPeopleSDemocraticRepublic, .laoPeopleSDemocraticRepublic): return true
-        case (.morocco, .morocco): return true
-        case (.tanzania, .tanzania): return true
-        case (.botswana, .botswana): return true
-        case (.egypt, .egypt): return true
-        case (.sriLanka, .sriLanka): return true
-        case (.czechia, .czechia): return true
-        case (.caboVerde, .caboVerde): return true
-        case (.romania, .romania): return true
-        case (.tunisia, .tunisia): return true
-        case (.sintMaarten, .sintMaarten): return true
-        case (.slovenia, .slovenia): return true
-        case (.singapore, .singapore): return true
-        case (.namibia, .namibia): return true
-        case (.estonia, .estonia): return true
-        case (.mauritania, .mauritania): return true
-        case (.italy, .italy): return true
-        case (.iceland, .iceland): return true
-        case (.afghanistan, .afghanistan): return true
-        case (.bulgaria, .bulgaria): return true
-        case (.diamondPrincess, .diamondPrincess): return true
-        case (.china, .china): return true
-        case (.belarus, .belarus): return true
-        case (.frenchPolynesia, .frenchPolynesia): return true
-        case (.peru, .peru): return true
-        case (.channelIslands, .channelIslands): return true
-        case (.bahamas, .bahamas): return true
-        case (.canada, .canada): return true
-        case (.honduras, .honduras): return true
-        case (.newZealand, .newZealand): return true
-        case (.iraq, .iraq): return true
-        case (.saoTomeAndPrincipe, .saoTomeAndPrincipe): return true
-        case (.luxembourg, .luxembourg): return true
-        case (.dominica, .dominica): return true
-        case (.frenchGuiana, .frenchGuiana): return true
-        case (.caymanIslands, .caymanIslands): return true
-        case (.benin, .benin): return true
-        case (.caribbeanNetherlands, .caribbeanNetherlands): return true
-        case (.timorLeste, .timorLeste): return true
-        case (.guatemala, .guatemala): return true
-        case (.saintMartin, .saintMartin): return true
-        case (.vietnam, .vietnam): return true
-        case (.martinique, .martinique): return true
-        case (.djibouti, .djibouti): return true
-        case (.holySeeVaticanCityState, .holySeeVaticanCityState): return true
-        case (.angola, .angola): return true
-        case (.qatar, .qatar): return true
-        case (.reunion, .reunion): return true
-        case (.saintVincentAndTheGrenadines, .saintVincentAndTheGrenadines): return true
-        case (.austria, .austria): return true
-        case (.seychelles, .seychelles): return true
-        case (.saudiArabia, .saudiArabia): return true
-        case (.somalia, .somalia): return true
-        case (.norway, .norway): return true
-        case (.guadeloupe, .guadeloupe): return true
-        case (.chile, .chile): return true
-        case (.mexico, .mexico): return true
-        case (.india, .india): return true
-        case (.germany, .germany): return true
-        case (.burkinaFaso, .burkinaFaso): return true
-        case (.anguilla, .anguilla): return true
-        case (.lesotho, .lesotho): return true
-        case (.denmark, .denmark): return true
-        case (.southSudan, .southSudan): return true
-        case (.newCaledonia, .newCaledonia): return true
-        case (.iran, .iran): return true
-        case (.mayotte, .mayotte): return true
-        case (.cyprus, .cyprus): return true
-        case (.mozambique, .mozambique): return true
-        case (.nigeria, .nigeria): return true
-        case (.aruba, .aruba): return true
-        case (.antiguaAndBarbuda, .antiguaAndBarbuda): return true
-        case (.zambia, .zambia): return true
-        case (.serbia, .serbia): return true
-        case (.uk, .uk): return true
-        case (.indonesia, .indonesia): return true
-        case (.isleOfMan, .isleOfMan): return true
-        case (.uzbekistan, .uzbekistan): return true
-        case (.faroeIslands, .faroeIslands): return true
-        case (.ireland, .ireland): return true
-        case (.jamaica, .jamaica): return true
-        case (.burundi, .burundi): return true
+        case (.solomonIslands, .solomonIslands): return true
+        case (.libyanArabJamahiriya, .libyanArabJamahiriya): return true
         case (.centralAfricanRepublic, .centralAfricanRepublic): return true
-        case (.philippines, .philippines): return true
+        case (.wallisAndFutuna, .wallisAndFutuna): return true
+        case (.egypt, .egypt): return true
+        case (.frenchPolynesia, .frenchPolynesia): return true
+        case (.equatorialGuinea, .equatorialGuinea): return true
+        case (.curacao, .curacao): return true
+        case (.samoa, .samoa): return true
+        case (.honduras, .honduras): return true
+        case (.mozambique, .mozambique): return true
+        case (.msZaandam, .msZaandam): return true
+        case (.slovenia, .slovenia): return true
+        case (.bhutan, .bhutan): return true
+        case (.morocco, .morocco): return true
+        case (.bulgaria, .bulgaria): return true
+        case (.sanMarino, .sanMarino): return true
+        case (.guinea, .guinea): return true
+        case (.iran, .iran): return true
+        case (.burundi, .burundi): return true
+        case (.lesotho, .lesotho): return true
+        case (.mauritius, .mauritius): return true
+        case (.ireland, .ireland): return true
+        case (.papuaNewGuinea, .papuaNewGuinea): return true
+        case (.swaziland, .swaziland): return true
+        case (.saintKittsAndNevis, .saintKittsAndNevis): return true
+        case (.seychelles, .seychelles): return true
+        case (.japan, .japan): return true
+        case (.vanuatu, .vanuatu): return true
+        case (.uk, .uk): return true
+        case (.thailand, .thailand): return true
+        case (.nepal, .nepal): return true
+        case (.sriLanka, .sriLanka): return true
+        case (.barbados, .barbados): return true
+        case (.syrianArabRepublic, .syrianArabRepublic): return true
+        case (.nicaragua, .nicaragua): return true
+        case (.chile, .chile): return true
+        case (.australia, .australia): return true
+        case (.andorra, .andorra): return true
+        case (.bangladesh, .bangladesh): return true
+        case (.saoTomeAndPrincipe, .saoTomeAndPrincipe): return true
+        case (.estonia, .estonia): return true
         case (.uae, .uae): return true
+        case (.norway, .norway): return true
+        case (.philippines, .philippines): return true
+        case (.macao, .macao): return true
+        case (.fiji, .fiji): return true
+        case (.russia, .russia): return true
+        case (.panama, .panama): return true
+        case (.myanmar, .myanmar): return true
+        case (.kyrgyzstan, .kyrgyzstan): return true
+        case (.singapore, .singapore): return true
+        case (.malaysia, .malaysia): return true
+        case (.elSalvador, .elSalvador): return true
+        case (.iraq, .iraq): return true
+        case (.anguilla, .anguilla): return true
+        case (.newCaledonia, .newCaledonia): return true
+        case (.frenchGuiana, .frenchGuiana): return true
+        case (.niger, .niger): return true
+        case (.dominica, .dominica): return true
+        case (.belize, .belize): return true
+        case (.georgia, .georgia): return true
+        case (.bahamas, .bahamas): return true
+        case (.sweden, .sweden): return true
+        case (.liberia, .liberia): return true
+        case (.ecuador, .ecuador): return true
+        case (.indonesia, .indonesia): return true
+        case (.saintPierreMiquelon, .saintPierreMiquelon): return true
+        case (.brazil, .brazil): return true
+        case (.tunisia, .tunisia): return true
+        case (.ghana, .ghana): return true
+        case (.india, .india): return true
+        case (.gambia, .gambia): return true
+        case (.qatar, .qatar): return true
+        case (.trinidadAndTobago, .trinidadAndTobago): return true
+        case (.djibouti, .djibouti): return true
+        case (.turkey, .turkey): return true
+        case (.liechtenstein, .liechtenstein): return true
+        case (.grenada, .grenada): return true
+        case (.britishVirginIslands, .britishVirginIslands): return true
+        case (.comoros, .comoros): return true
+        case (.cameroon, .cameroon): return true
+        case (.azerbaijan, .azerbaijan): return true
+        case (.southSudan, .southSudan): return true
+        case (.kazakhstan, .kazakhstan): return true
+        case (.falklandIslandsMalvinas, .falklandIslandsMalvinas): return true
+        case (.belarus, .belarus): return true
+        case (.greenland, .greenland): return true
+        case (.botswana, .botswana): return true
+        case (.israel, .israel): return true
+        case (.malawi, .malawi): return true
+        case (.micronesia, .micronesia): return true
+        case (.spain, .spain): return true
+        case (.hungary, .hungary): return true
+        case (.uzbekistan, .uzbekistan): return true
+        case (.guineaBissau, .guineaBissau): return true
+        case (.germany, .germany): return true
+        case (.guyana, .guyana): return true
+        case (.bolivia, .bolivia): return true
+        case (.gabon, .gabon): return true
+        case (.finland, .finland): return true
+        case (.canada, .canada): return true
+        case (.afghanistan, .afghanistan): return true
+        case (.saintMartin, .saintMartin): return true
         case (.sierraLeone, .sierraLeone): return true
-        case (.belgium, .belgium): return true
         case (.slovakia, .slovakia): return true
+        case (.chad, .chad): return true
+        case (.turksAndCaicosIslands, .turksAndCaicosIslands): return true
+        case (.argentina, .argentina): return true
+        case (.gibraltar, .gibraltar): return true
+        case (.latvia, .latvia): return true
+        case (.netherlands, .netherlands): return true
+        case (.serbia, .serbia): return true
+        case (.caribbeanNetherlands, .caribbeanNetherlands): return true
+        case (.coteDIvoire, .coteDIvoire): return true
+        case (.somalia, .somalia): return true
+        case (.luxembourg, .luxembourg): return true
+        case (.holySeeVaticanCityState, .holySeeVaticanCityState): return true
+        case (.pakistan, .pakistan): return true
+        case (.cuba, .cuba): return true
+        case (.vietnam, .vietnam): return true
+        case (.bahrain, .bahrain): return true
+        case (.greece, .greece): return true
+        case (.antiguaAndBarbuda, .antiguaAndBarbuda): return true
+        case (.paraguay, .paraguay): return true
+        case (.martinique, .martinique): return true
+        case (.jordan, .jordan): return true
+        case (.faroeIslands, .faroeIslands): return true
+        case (.montserrat, .montserrat): return true
+        case (.czechia, .czechia): return true
+        case (.brunei, .brunei): return true
+        case (.kuwait, .kuwait): return true
+        case (.zambia, .zambia): return true
+        case (.montenegro, .montenegro): return true
+        case (.sudan, .sudan): return true
+        case (.suriname, .suriname): return true
+        case (.isleOfMan, .isleOfMan): return true
+        case (.switzerland, .switzerland): return true
+        case (.cambodia, .cambodia): return true
+        case (.france, .france): return true
+        case (.angola, .angola): return true
+        case (.sKorea, .sKorea): return true
+        case (.benin, .benin): return true
+        case (.portugal, .portugal): return true
+        case (.oman, .oman): return true
+        case (.denmark, .denmark): return true
+        case (.palestine, .palestine): return true
+        case (.dominicanRepublic, .dominicanRepublic): return true
+        case (.uganda, .uganda): return true
+        case (.bosnia, .bosnia): return true
+        case (.sintMaarten, .sintMaarten): return true
+        case (.romania, .romania): return true
+        case (.colombia, .colombia): return true
+        case (.yemen, .yemen): return true
+        case (.monaco, .monaco): return true
+        case (.guatemala, .guatemala): return true
+        case (.channelIslands, .channelIslands): return true
+        case (.mayotte, .mayotte): return true
+        case (.burkinaFaso, .burkinaFaso): return true
+        case (.aruba, .aruba): return true
+        case (.taiwan, .taiwan): return true
+        case (.zimbabwe, .zimbabwe): return true
+        case (.poland, .poland): return true
+        case (.westernSahara, .westernSahara): return true
+        case (.algeria, .algeria): return true
+        case (.nigeria, .nigeria): return true
+        case (.malta, .malta): return true
+        case (.timorLeste, .timorLeste): return true
+        case (.drc, .drc): return true
+        case (.lithuania, .lithuania): return true
+        case (.bermuda, .bermuda): return true
+        case (.cyprus, .cyprus): return true
+        case (.jamaica, .jamaica): return true
+        case (.mauritania, .mauritania): return true
+        case (.senegal, .senegal): return true
+        case (.caboVerde, .caboVerde): return true
+        case (.tajikistan, .tajikistan): return true
+        case (.usa, .usa): return true
+        case (.moldova, .moldova): return true
+        case (.reunion, .reunion): return true
+        case (.namibia, .namibia): return true
+        case (.eritrea, .eritrea): return true
+        case (.saintVincentAndTheGrenadines, .saintVincentAndTheGrenadines): return true
+        case (.italy, .italy): return true
+        case (.congo, .congo): return true
+        case (.china, .china): return true
+        case (.southAfrica, .southAfrica): return true
+        case (.iceland, .iceland): return true
+        case (.lebanon, .lebanon): return true
+        case (.kenya, .kenya): return true
+        case (.uruguay, .uruguay): return true
+        case (.mongolia, .mongolia): return true
+        case (.tanzania, .tanzania): return true
+        case (.albania, .albania): return true
+        case (.austria, .austria): return true
+        case (.macedonia, .macedonia): return true
+        case (.guadeloupe, .guadeloupe): return true
+        case (.costaRica, .costaRica): return true
+        case (.newZealand, .newZealand): return true
+        case (.mexico, .mexico): return true
+        case (.stBarth, .stBarth): return true
+        case (.saintLucia, .saintLucia): return true
+        case (.rwanda, .rwanda): return true
+        case (.venezuela, .venezuela): return true
+        case (.croatia, .croatia): return true
+        case (.saudiArabia, .saudiArabia): return true
+        case (.marshallIslands, .marshallIslands): return true
+        case (.diamondPrincess, .diamondPrincess): return true
+        case (.peru, .peru): return true
+        case (.ukraine, .ukraine): return true
+        case (.maldives, .maldives): return true
+        case (.madagascar, .madagascar): return true
+        case (.laoPeopleSDemocraticRepublic, .laoPeopleSDemocraticRepublic): return true
+        case (.belgium, .belgium): return true
+        case (.caymanIslands, .caymanIslands): return true
+        case (.ethiopia, .ethiopia): return true
+        case (.mali, .mali): return true
+        case (.armenia, .armenia): return true
+        case (.hongKong, .hongKong): return true
+        case (.togo, .togo): return true
         case (.__unknown(let lhsValue), .__unknown(let rhsValue)): return lhsValue == rhsValue
         default: return false
       }
@@ -3362,221 +4096,227 @@ public enum ApolloCovid {
 
     public static var allCases: [CountryIdentifier] {
       return [
-        .turksAndCaicosIslands,
-        .dominicanRepublic,
-        .greece,
-        .senegal,
-        .panama,
-        .syrianArabRepublic,
-        .ethiopia,
-        .fiji,
-        .kazakhstan,
-        .brazil,
-        .libyanArabJamahiriya,
-        .lithuania,
-        .andorra,
-        .trinidadAndTobago,
-        .saintKittsAndNevis,
-        .brunei,
-        .argentina,
-        .finland,
-        .costaRica,
-        .portugal,
-        .rwanda,
-        .australia,
-        .guineaBissau,
-        .gabon,
-        .saintLucia,
-        .sudan,
-        .yemen,
-        .barbados,
-        .guyana,
-        .ecuador,
-        .macao,
-        .colombia,
-        .poland,
-        .sanMarino,
-        .swaziland,
-        .venezuela,
-        .cambodia,
-        .westernSahara,
-        .kenya,
-        .turkey,
-        .malawi,
-        .tajikistan,
-        .nicaragua,
-        .israel,
-        .bangladesh,
-        .sKorea,
-        .chad,
-        .zimbabwe,
-        .montserrat,
-        .comoros,
-        .uruguay,
-        .switzerland,
-        .cuba,
-        .jordan,
-        .congo,
-        .uganda,
-        .greenland,
-        .southAfrica,
-        .elSalvador,
-        .grenada,
-        .suriname,
-        .mauritius,
-        .malta,
-        .ghana,
-        .latvia,
-        .paraguay,
-        .niger,
-        .guinea,
-        .taiwan,
-        .papuaNewGuinea,
-        .togo,
-        .liechtenstein,
-        .ukraine,
-        .equatorialGuinea,
-        .spain,
-        .madagascar,
-        .georgia,
-        .montenegro,
-        .belize,
-        .thailand,
-        .armenia,
-        .usa,
-        .maldives,
-        .drc,
-        .gambia,
-        .kuwait,
-        .bhutan,
-        .mongolia,
-        .liberia,
-        .nepal,
-        .msZaandam,
-        .moldova,
-        .oman,
-        .pakistan,
-        .coteDIvoire,
-        .monaco,
-        .curacao,
-        .bosnia,
-        .albania,
-        .saintPierreMiquelon,
-        .mali,
-        .netherlands,
-        .stBarth,
-        .britishVirginIslands,
-        .france,
-        .croatia,
-        .falklandIslandsMalvinas,
-        .bolivia,
-        .bermuda,
-        .bahrain,
-        .palestine,
-        .japan,
-        .azerbaijan,
-        .hungary,
-        .kyrgyzstan,
-        .cameroon,
-        .algeria,
         .haiti,
-        .myanmar,
-        .macedonia,
-        .malaysia,
-        .russia,
-        .sweden,
-        .eritrea,
-        .gibraltar,
-        .lebanon,
-        .hongKong,
-        .laoPeopleSDemocraticRepublic,
-        .morocco,
-        .tanzania,
-        .botswana,
-        .egypt,
-        .sriLanka,
-        .czechia,
-        .caboVerde,
-        .romania,
-        .tunisia,
-        .sintMaarten,
-        .slovenia,
-        .singapore,
-        .namibia,
-        .estonia,
-        .mauritania,
-        .italy,
-        .iceland,
-        .afghanistan,
-        .bulgaria,
-        .diamondPrincess,
-        .china,
-        .belarus,
-        .frenchPolynesia,
-        .peru,
-        .channelIslands,
-        .bahamas,
-        .canada,
-        .honduras,
-        .newZealand,
-        .iraq,
-        .saoTomeAndPrincipe,
-        .luxembourg,
-        .dominica,
-        .frenchGuiana,
-        .caymanIslands,
-        .benin,
-        .caribbeanNetherlands,
-        .timorLeste,
-        .guatemala,
-        .saintMartin,
-        .vietnam,
-        .martinique,
-        .djibouti,
-        .holySeeVaticanCityState,
-        .angola,
-        .qatar,
-        .reunion,
-        .saintVincentAndTheGrenadines,
-        .austria,
-        .seychelles,
-        .saudiArabia,
-        .somalia,
-        .norway,
-        .guadeloupe,
-        .chile,
-        .mexico,
-        .india,
-        .germany,
-        .burkinaFaso,
-        .anguilla,
-        .lesotho,
-        .denmark,
-        .southSudan,
-        .newCaledonia,
-        .iran,
-        .mayotte,
-        .cyprus,
-        .mozambique,
-        .nigeria,
-        .aruba,
-        .antiguaAndBarbuda,
-        .zambia,
-        .serbia,
-        .uk,
-        .indonesia,
-        .isleOfMan,
-        .uzbekistan,
-        .faroeIslands,
-        .ireland,
-        .jamaica,
-        .burundi,
+        .solomonIslands,
+        .libyanArabJamahiriya,
         .centralAfricanRepublic,
-        .philippines,
+        .wallisAndFutuna,
+        .egypt,
+        .frenchPolynesia,
+        .equatorialGuinea,
+        .curacao,
+        .samoa,
+        .honduras,
+        .mozambique,
+        .msZaandam,
+        .slovenia,
+        .bhutan,
+        .morocco,
+        .bulgaria,
+        .sanMarino,
+        .guinea,
+        .iran,
+        .burundi,
+        .lesotho,
+        .mauritius,
+        .ireland,
+        .papuaNewGuinea,
+        .swaziland,
+        .saintKittsAndNevis,
+        .seychelles,
+        .japan,
+        .vanuatu,
+        .uk,
+        .thailand,
+        .nepal,
+        .sriLanka,
+        .barbados,
+        .syrianArabRepublic,
+        .nicaragua,
+        .chile,
+        .australia,
+        .andorra,
+        .bangladesh,
+        .saoTomeAndPrincipe,
+        .estonia,
         .uae,
+        .norway,
+        .philippines,
+        .macao,
+        .fiji,
+        .russia,
+        .panama,
+        .myanmar,
+        .kyrgyzstan,
+        .singapore,
+        .malaysia,
+        .elSalvador,
+        .iraq,
+        .anguilla,
+        .newCaledonia,
+        .frenchGuiana,
+        .niger,
+        .dominica,
+        .belize,
+        .georgia,
+        .bahamas,
+        .sweden,
+        .liberia,
+        .ecuador,
+        .indonesia,
+        .saintPierreMiquelon,
+        .brazil,
+        .tunisia,
+        .ghana,
+        .india,
+        .gambia,
+        .qatar,
+        .trinidadAndTobago,
+        .djibouti,
+        .turkey,
+        .liechtenstein,
+        .grenada,
+        .britishVirginIslands,
+        .comoros,
+        .cameroon,
+        .azerbaijan,
+        .southSudan,
+        .kazakhstan,
+        .falklandIslandsMalvinas,
+        .belarus,
+        .greenland,
+        .botswana,
+        .israel,
+        .malawi,
+        .micronesia,
+        .spain,
+        .hungary,
+        .uzbekistan,
+        .guineaBissau,
+        .germany,
+        .guyana,
+        .bolivia,
+        .gabon,
+        .finland,
+        .canada,
+        .afghanistan,
+        .saintMartin,
         .sierraLeone,
-        .belgium,
         .slovakia,
+        .chad,
+        .turksAndCaicosIslands,
+        .argentina,
+        .gibraltar,
+        .latvia,
+        .netherlands,
+        .serbia,
+        .caribbeanNetherlands,
+        .coteDIvoire,
+        .somalia,
+        .luxembourg,
+        .holySeeVaticanCityState,
+        .pakistan,
+        .cuba,
+        .vietnam,
+        .bahrain,
+        .greece,
+        .antiguaAndBarbuda,
+        .paraguay,
+        .martinique,
+        .jordan,
+        .faroeIslands,
+        .montserrat,
+        .czechia,
+        .brunei,
+        .kuwait,
+        .zambia,
+        .montenegro,
+        .sudan,
+        .suriname,
+        .isleOfMan,
+        .switzerland,
+        .cambodia,
+        .france,
+        .angola,
+        .sKorea,
+        .benin,
+        .portugal,
+        .oman,
+        .denmark,
+        .palestine,
+        .dominicanRepublic,
+        .uganda,
+        .bosnia,
+        .sintMaarten,
+        .romania,
+        .colombia,
+        .yemen,
+        .monaco,
+        .guatemala,
+        .channelIslands,
+        .mayotte,
+        .burkinaFaso,
+        .aruba,
+        .taiwan,
+        .zimbabwe,
+        .poland,
+        .westernSahara,
+        .algeria,
+        .nigeria,
+        .malta,
+        .timorLeste,
+        .drc,
+        .lithuania,
+        .bermuda,
+        .cyprus,
+        .jamaica,
+        .mauritania,
+        .senegal,
+        .caboVerde,
+        .tajikistan,
+        .usa,
+        .moldova,
+        .reunion,
+        .namibia,
+        .eritrea,
+        .saintVincentAndTheGrenadines,
+        .italy,
+        .congo,
+        .china,
+        .southAfrica,
+        .iceland,
+        .lebanon,
+        .kenya,
+        .uruguay,
+        .mongolia,
+        .tanzania,
+        .albania,
+        .austria,
+        .macedonia,
+        .guadeloupe,
+        .costaRica,
+        .newZealand,
+        .mexico,
+        .stBarth,
+        .saintLucia,
+        .rwanda,
+        .venezuela,
+        .croatia,
+        .saudiArabia,
+        .marshallIslands,
+        .diamondPrincess,
+        .peru,
+        .ukraine,
+        .maldives,
+        .madagascar,
+        .laoPeopleSDemocraticRepublic,
+        .belgium,
+        .caymanIslands,
+        .ethiopia,
+        .mali,
+        .armenia,
+        .hongKong,
+        .togo,
       ]
     }
   }
@@ -3585,7 +4325,7 @@ public enum ApolloCovid {
     /// The raw GraphQL definition of this operation.
     public let operationDefinition: String =
       """
-      query ContentViewCountriesCountryConnectionBasicCountryCellCountry($last: Int, $first: Int, $after: String, $before: String) {
+      query ContentViewCountriesCountryConnectionBasicCountryCellCountry($before: String, $first: Int, $last: Int, $after: String) {
         countries(after: $after, before: $before, first: $first, last: $last) {
           __typename
           ...CountryConnectionBasicCountryCellCountry
@@ -3595,22 +4335,27 @@ public enum ApolloCovid {
 
     public let operationName: String = "ContentViewCountriesCountryConnectionBasicCountryCellCountry"
 
-    public var queryDocument: String { return operationDefinition.appending("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition).appending("\n" + BasicCountryCellCountry.fragmentDefinition) }
+    public var queryDocument: String {
+      var document: String = operationDefinition
+      document.append("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition)
+      document.append("\n" + BasicCountryCellCountry.fragmentDefinition)
+      return document
+    }
 
-    public var last: Int?
-    public var first: Int?
-    public var after: String?
     public var before: String?
+    public var first: Int?
+    public var last: Int?
+    public var after: String?
 
-    public init(last: Int? = nil, first: Int? = nil, after: String? = nil, before: String? = nil) {
-      self.last = last
-      self.first = first
-      self.after = after
+    public init(before: String? = nil, first: Int? = nil, last: Int? = nil, after: String? = nil) {
       self.before = before
+      self.first = first
+      self.last = last
+      self.after = after
     }
 
     public var variables: GraphQLMap? {
-      return ["last": last, "first": first, "after": after, "before": before]
+      return ["before": before, "first": first, "last": last, "after": after]
     }
 
     public struct Data: GraphQLSelectionSet {
@@ -3699,13 +4444,13 @@ public enum ApolloCovid {
     /// The raw GraphQL definition of this operation.
     public let operationDefinition: String =
       """
-      query CountryDetailView($identifier: CountryIdentifier!, $since: Date!, $numberOfPoints: Int!) {
+      query CountryDetailView($identifier: CountryIdentifier!, $numberOfPoints: Int!) {
         country(identifier: $identifier) {
           __typename
-          ...StatsViewAffected
+          ...StatsViewIAffected
           info {
             __typename
-            iso2
+            emoji
           }
           name
           news {
@@ -3717,21 +4462,21 @@ public enum ApolloCovid {
             __typename
             cases {
               __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
+              graph(numberOfPoints: $numberOfPoints) {
                 __typename
                 value
               }
             }
             deaths {
               __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
+              graph(numberOfPoints: $numberOfPoints) {
                 __typename
                 value
               }
             }
             recovered {
               __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
+              graph(numberOfPoints: $numberOfPoints) {
                 __typename
                 value
               }
@@ -3745,20 +4490,23 @@ public enum ApolloCovid {
 
     public let operationName: String = "CountryDetailView"
 
-    public var queryDocument: String { return operationDefinition.appending("\n" + StatsViewAffected.fragmentDefinition).appending("\n" + NewsStoryCellNewsStory.fragmentDefinition) }
+    public var queryDocument: String {
+      var document: String = operationDefinition
+      document.append("\n" + StatsViewIAffected.fragmentDefinition)
+      document.append("\n" + NewsStoryCellNewsStory.fragmentDefinition)
+      return document
+    }
 
     public var identifier: CountryIdentifier
-    public var since: String
     public var numberOfPoints: Int
 
-    public init(identifier: CountryIdentifier, since: String, numberOfPoints: Int) {
+    public init(identifier: CountryIdentifier, numberOfPoints: Int) {
       self.identifier = identifier
-      self.since = since
       self.numberOfPoints = numberOfPoints
     }
 
     public var variables: GraphQLMap? {
-      return ["identifier": identifier, "since": since, "numberOfPoints": numberOfPoints]
+      return ["identifier": identifier, "numberOfPoints": numberOfPoints]
     }
 
     public struct Data: GraphQLSelectionSet {
@@ -3795,7 +4543,7 @@ public enum ApolloCovid {
         public static var selections: [GraphQLSelection] {
           return [
             GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-            GraphQLFragmentSpread(StatsViewAffected.self),
+            GraphQLFragmentSpread(StatsViewIAffected.self),
             GraphQLField("info", type: .nonNull(.object(Info.selections))),
             GraphQLField("name", type: .nonNull(.scalar(String.self))),
             GraphQLField("news", type: .nonNull(.list(.nonNull(.object(News.selections))))),
@@ -3890,9 +4638,9 @@ public enum ApolloCovid {
             self.resultMap = unsafeResultMap
           }
 
-          public var statsViewAffected: StatsViewAffected {
+          public var statsViewIAffected: StatsViewIAffected {
             get {
-              return StatsViewAffected(unsafeResultMap: resultMap)
+              return StatsViewIAffected(unsafeResultMap: resultMap)
             }
             set {
               resultMap += newValue.resultMap
@@ -3906,7 +4654,7 @@ public enum ApolloCovid {
           public static var selections: [GraphQLSelection] {
             return [
               GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-              GraphQLField("iso2", type: .scalar(String.self)),
+              GraphQLField("emoji", type: .scalar(String.self)),
             ]
           }
 
@@ -3916,8 +4664,8 @@ public enum ApolloCovid {
             self.resultMap = unsafeResultMap
           }
 
-          public init(iso2: String? = nil) {
-            self.init(unsafeResultMap: ["__typename": "Info", "iso2": iso2])
+          public init(emoji: String? = nil) {
+            self.init(unsafeResultMap: ["__typename": "Info", "emoji": emoji])
           }
 
           public var __typename: String {
@@ -3929,12 +4677,12 @@ public enum ApolloCovid {
             }
           }
 
-          public var iso2: String? {
+          public var emoji: String? {
             get {
-              return resultMap["iso2"] as? String
+              return resultMap["emoji"] as? String
             }
             set {
-              resultMap.updateValue(newValue, forKey: "iso2")
+              resultMap.updateValue(newValue, forKey: "emoji")
             }
           }
         }
@@ -4065,7 +4813,7 @@ public enum ApolloCovid {
             public static var selections: [GraphQLSelection] {
               return [
                 GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
+                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
               ]
             }
 
@@ -4143,7 +4891,7 @@ public enum ApolloCovid {
             public static var selections: [GraphQLSelection] {
               return [
                 GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
+                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
               ]
             }
 
@@ -4221,7 +4969,7 @@ public enum ApolloCovid {
             public static var selections: [GraphQLSelection] {
               return [
                 GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
+                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
               ]
             }
 
@@ -4301,7 +5049,7 @@ public enum ApolloCovid {
     /// The raw GraphQL definition of this operation.
     public let operationDefinition: String =
       """
-      query ContentView($last: Int, $first: Int, $after: String, $before: String, $since: Date!, $numberOfPoints: Int!) {
+      query ContentView($before: String, $first: Int, $last: Int, $after: String, $numberOfPoints: Int!) {
         countries(after: $after, before: $before, first: $first, last: $last) {
           __typename
           ...CountryConnectionBasicCountryCellCountry
@@ -4315,24 +5063,24 @@ public enum ApolloCovid {
         }
         myCountry {
           __typename
-          ...StatsViewAffected
+          ...StatsViewIAffected
           info {
             __typename
-            iso2
+            emoji
           }
           name
           timeline {
             __typename
             cases {
               __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
+              graph(numberOfPoints: $numberOfPoints) {
                 __typename
                 value
               }
             }
           }
           todayDeaths
-          ...StatsViewAffected
+          ...StatsViewIAffected
           name
           news {
             __typename
@@ -4350,21 +5098,7 @@ public enum ApolloCovid {
             __typename
             cases {
               __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
-                __typename
-                value
-              }
-            }
-            deaths {
-              __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
-                __typename
-                value
-              }
-            }
-            recovered {
-              __typename
-              graph(numberOfPoints: $numberOfPoints, since: $since) {
+              graph(numberOfPoints: $numberOfPoints) {
                 __typename
                 value
               }
@@ -4376,26 +5110,36 @@ public enum ApolloCovid {
 
     public let operationName: String = "ContentView"
 
-    public var queryDocument: String { return operationDefinition.appending("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition).appending("\n" + BasicCountryCellCountry.fragmentDefinition).appending("\n" + CountryMapPinCountry.fragmentDefinition).appending("\n" + StatsViewAffected.fragmentDefinition).appending("\n" + NewsStoryCellNewsStory.fragmentDefinition).appending("\n" + CurrentStateCellWorld.fragmentDefinition) }
+    public var queryDocument: String {
+      var document: String = operationDefinition
+      document.append("\n" + CountryConnectionBasicCountryCellCountry.fragmentDefinition)
+      document.append("\n" + BasicCountryCellCountry.fragmentDefinition)
+      document.append("\n" + CountryMapPinCountry.fragmentDefinition)
+      document.append("\n" + MultiPolygonMultiPolygon.fragmentDefinition)
+      document.append("\n" + PolygonPolygon.fragmentDefinition)
+      document.append("\n" + CoordinatesCoordinates.fragmentDefinition)
+      document.append("\n" + StatsViewIAffected.fragmentDefinition)
+      document.append("\n" + NewsStoryCellNewsStory.fragmentDefinition)
+      document.append("\n" + CurrentStateCellWorld.fragmentDefinition)
+      return document
+    }
 
-    public var last: Int?
-    public var first: Int?
-    public var after: String?
     public var before: String?
-    public var since: String
+    public var first: Int?
+    public var last: Int?
+    public var after: String?
     public var numberOfPoints: Int
 
-    public init(last: Int? = nil, first: Int? = nil, after: String? = nil, before: String? = nil, since: String, numberOfPoints: Int) {
-      self.last = last
-      self.first = first
-      self.after = after
+    public init(before: String? = nil, first: Int? = nil, last: Int? = nil, after: String? = nil, numberOfPoints: Int) {
       self.before = before
-      self.since = since
+      self.first = first
+      self.last = last
+      self.after = after
       self.numberOfPoints = numberOfPoints
     }
 
     public var variables: GraphQLMap? {
-      return ["last": last, "first": first, "after": after, "before": before, "since": since, "numberOfPoints": numberOfPoints]
+      return ["before": before, "first": first, "last": last, "after": after, "numberOfPoints": numberOfPoints]
     }
 
     public struct Data: GraphQLSelectionSet {
@@ -4605,7 +5349,7 @@ public enum ApolloCovid {
         public static var selections: [GraphQLSelection] {
           return [
             GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-            GraphQLFragmentSpread(StatsViewAffected.self),
+            GraphQLFragmentSpread(StatsViewIAffected.self),
             GraphQLField("info", type: .nonNull(.object(Info.selections))),
             GraphQLField("name", type: .nonNull(.scalar(String.self))),
             GraphQLField("timeline", type: .nonNull(.object(Timeline.selections))),
@@ -4691,9 +5435,9 @@ public enum ApolloCovid {
             self.resultMap = unsafeResultMap
           }
 
-          public var statsViewAffected: StatsViewAffected {
+          public var statsViewIAffected: StatsViewIAffected {
             get {
-              return StatsViewAffected(unsafeResultMap: resultMap)
+              return StatsViewIAffected(unsafeResultMap: resultMap)
             }
             set {
               resultMap += newValue.resultMap
@@ -4707,7 +5451,7 @@ public enum ApolloCovid {
           public static var selections: [GraphQLSelection] {
             return [
               GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-              GraphQLField("iso2", type: .scalar(String.self)),
+              GraphQLField("emoji", type: .scalar(String.self)),
             ]
           }
 
@@ -4717,8 +5461,8 @@ public enum ApolloCovid {
             self.resultMap = unsafeResultMap
           }
 
-          public init(iso2: String? = nil) {
-            self.init(unsafeResultMap: ["__typename": "Info", "iso2": iso2])
+          public init(emoji: String? = nil) {
+            self.init(unsafeResultMap: ["__typename": "Info", "emoji": emoji])
           }
 
           public var __typename: String {
@@ -4730,12 +5474,12 @@ public enum ApolloCovid {
             }
           }
 
-          public var iso2: String? {
+          public var emoji: String? {
             get {
-              return resultMap["iso2"] as? String
+              return resultMap["emoji"] as? String
             }
             set {
-              resultMap.updateValue(newValue, forKey: "iso2")
+              resultMap.updateValue(newValue, forKey: "emoji")
             }
           }
         }
@@ -4784,7 +5528,7 @@ public enum ApolloCovid {
             public static var selections: [GraphQLSelection] {
               return [
                 GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
+                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
               ]
             }
 
@@ -5040,8 +5784,6 @@ public enum ApolloCovid {
             return [
               GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
               GraphQLField("cases", type: .nonNull(.object(Case.selections))),
-              GraphQLField("deaths", type: .nonNull(.object(Death.selections))),
-              GraphQLField("recovered", type: .nonNull(.object(Recovered.selections))),
             ]
           }
 
@@ -5051,8 +5793,8 @@ public enum ApolloCovid {
             self.resultMap = unsafeResultMap
           }
 
-          public init(cases: Case, deaths: Death, recovered: Recovered) {
-            self.init(unsafeResultMap: ["__typename": "Timeline", "cases": cases.resultMap, "deaths": deaths.resultMap, "recovered": recovered.resultMap])
+          public init(cases: Case) {
+            self.init(unsafeResultMap: ["__typename": "Timeline", "cases": cases.resultMap])
           }
 
           public var __typename: String {
@@ -5073,187 +5815,13 @@ public enum ApolloCovid {
             }
           }
 
-          public var deaths: Death {
-            get {
-              return Death(unsafeResultMap: resultMap["deaths"]! as! ResultMap)
-            }
-            set {
-              resultMap.updateValue(newValue.resultMap, forKey: "deaths")
-            }
-          }
-
-          public var recovered: Recovered {
-            get {
-              return Recovered(unsafeResultMap: resultMap["recovered"]! as! ResultMap)
-            }
-            set {
-              resultMap.updateValue(newValue.resultMap, forKey: "recovered")
-            }
-          }
-
           public struct Case: GraphQLSelectionSet {
             public static let possibleTypes: [String] = ["DataPointsCollection"]
 
             public static var selections: [GraphQLSelection] {
               return [
                 GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
-              ]
-            }
-
-            public private(set) var resultMap: ResultMap
-
-            public init(unsafeResultMap: ResultMap) {
-              self.resultMap = unsafeResultMap
-            }
-
-            public init(graph: [Graph]) {
-              self.init(unsafeResultMap: ["__typename": "DataPointsCollection", "graph": graph.map { (value: Graph) -> ResultMap in value.resultMap }])
-            }
-
-            public var __typename: String {
-              get {
-                return resultMap["__typename"]! as! String
-              }
-              set {
-                resultMap.updateValue(newValue, forKey: "__typename")
-              }
-            }
-
-            public var graph: [Graph] {
-              get {
-                return (resultMap["graph"] as! [ResultMap]).map { (value: ResultMap) -> Graph in Graph(unsafeResultMap: value) }
-              }
-              set {
-                resultMap.updateValue(newValue.map { (value: Graph) -> ResultMap in value.resultMap }, forKey: "graph")
-              }
-            }
-
-            public struct Graph: GraphQLSelectionSet {
-              public static let possibleTypes: [String] = ["DataPoint"]
-
-              public static var selections: [GraphQLSelection] {
-                return [
-                  GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                  GraphQLField("value", type: .nonNull(.scalar(Int.self))),
-                ]
-              }
-
-              public private(set) var resultMap: ResultMap
-
-              public init(unsafeResultMap: ResultMap) {
-                self.resultMap = unsafeResultMap
-              }
-
-              public init(value: Int) {
-                self.init(unsafeResultMap: ["__typename": "DataPoint", "value": value])
-              }
-
-              public var __typename: String {
-                get {
-                  return resultMap["__typename"]! as! String
-                }
-                set {
-                  resultMap.updateValue(newValue, forKey: "__typename")
-                }
-              }
-
-              public var value: Int {
-                get {
-                  return resultMap["value"]! as! Int
-                }
-                set {
-                  resultMap.updateValue(newValue, forKey: "value")
-                }
-              }
-            }
-          }
-
-          public struct Death: GraphQLSelectionSet {
-            public static let possibleTypes: [String] = ["DataPointsCollection"]
-
-            public static var selections: [GraphQLSelection] {
-              return [
-                GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
-              ]
-            }
-
-            public private(set) var resultMap: ResultMap
-
-            public init(unsafeResultMap: ResultMap) {
-              self.resultMap = unsafeResultMap
-            }
-
-            public init(graph: [Graph]) {
-              self.init(unsafeResultMap: ["__typename": "DataPointsCollection", "graph": graph.map { (value: Graph) -> ResultMap in value.resultMap }])
-            }
-
-            public var __typename: String {
-              get {
-                return resultMap["__typename"]! as! String
-              }
-              set {
-                resultMap.updateValue(newValue, forKey: "__typename")
-              }
-            }
-
-            public var graph: [Graph] {
-              get {
-                return (resultMap["graph"] as! [ResultMap]).map { (value: ResultMap) -> Graph in Graph(unsafeResultMap: value) }
-              }
-              set {
-                resultMap.updateValue(newValue.map { (value: Graph) -> ResultMap in value.resultMap }, forKey: "graph")
-              }
-            }
-
-            public struct Graph: GraphQLSelectionSet {
-              public static let possibleTypes: [String] = ["DataPoint"]
-
-              public static var selections: [GraphQLSelection] {
-                return [
-                  GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                  GraphQLField("value", type: .nonNull(.scalar(Int.self))),
-                ]
-              }
-
-              public private(set) var resultMap: ResultMap
-
-              public init(unsafeResultMap: ResultMap) {
-                self.resultMap = unsafeResultMap
-              }
-
-              public init(value: Int) {
-                self.init(unsafeResultMap: ["__typename": "DataPoint", "value": value])
-              }
-
-              public var __typename: String {
-                get {
-                  return resultMap["__typename"]! as! String
-                }
-                set {
-                  resultMap.updateValue(newValue, forKey: "__typename")
-                }
-              }
-
-              public var value: Int {
-                get {
-                  return resultMap["value"]! as! Int
-                }
-                set {
-                  resultMap.updateValue(newValue, forKey: "value")
-                }
-              }
-            }
-          }
-
-          public struct Recovered: GraphQLSelectionSet {
-            public static let possibleTypes: [String] = ["DataPointsCollection"]
-
-            public static var selections: [GraphQLSelection] {
-              return [
-                GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints"), "since": GraphQLVariable("since")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
+                GraphQLField("graph", arguments: ["numberOfPoints": GraphQLVariable("numberOfPoints")], type: .nonNull(.list(.nonNull(.object(Graph.selections))))),
               ]
             }
 
@@ -5548,7 +6116,7 @@ public enum ApolloCovid {
         identifier
         info {
           __typename
-          iso2
+          emoji
         }
         name
       }
@@ -5627,7 +6195,7 @@ public enum ApolloCovid {
       public static var selections: [GraphQLSelection] {
         return [
           GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-          GraphQLField("iso2", type: .scalar(String.self)),
+          GraphQLField("emoji", type: .scalar(String.self)),
         ]
       }
 
@@ -5637,8 +6205,8 @@ public enum ApolloCovid {
         self.resultMap = unsafeResultMap
       }
 
-      public init(iso2: String? = nil) {
-        self.init(unsafeResultMap: ["__typename": "Info", "iso2": iso2])
+      public init(emoji: String? = nil) {
+        self.init(unsafeResultMap: ["__typename": "Info", "emoji": emoji])
       }
 
       public var __typename: String {
@@ -5650,12 +6218,281 @@ public enum ApolloCovid {
         }
       }
 
-      public var iso2: String? {
+      public var emoji: String? {
         get {
-          return resultMap["iso2"] as? String
+          return resultMap["emoji"] as? String
         }
         set {
-          resultMap.updateValue(newValue, forKey: "iso2")
+          resultMap.updateValue(newValue, forKey: "emoji")
+        }
+      }
+    }
+  }
+
+  public struct CoordinatesCoordinates: GraphQLFragment {
+    /// The raw GraphQL definition of this fragment.
+    public static let fragmentDefinition: String =
+      """
+      fragment CoordinatesCoordinates on Coordinates {
+        __typename
+        latitude
+        longitude
+      }
+      """
+
+    public static let possibleTypes: [String] = ["Coordinates"]
+
+    public static var selections: [GraphQLSelection] {
+      return [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("latitude", type: .nonNull(.scalar(Double.self))),
+        GraphQLField("longitude", type: .nonNull(.scalar(Double.self))),
+      ]
+    }
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(latitude: Double, longitude: Double) {
+      self.init(unsafeResultMap: ["__typename": "Coordinates", "latitude": latitude, "longitude": longitude])
+    }
+
+    public var __typename: String {
+      get {
+        return resultMap["__typename"]! as! String
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "__typename")
+      }
+    }
+
+    public var latitude: Double {
+      get {
+        return resultMap["latitude"]! as! Double
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "latitude")
+      }
+    }
+
+    public var longitude: Double {
+      get {
+        return resultMap["longitude"]! as! Double
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "longitude")
+      }
+    }
+  }
+
+  public struct PolygonPolygon: GraphQLFragment {
+    /// The raw GraphQL definition of this fragment.
+    public static let fragmentDefinition: String =
+      """
+      fragment PolygonPolygon on Polygon {
+        __typename
+        points {
+          __typename
+          ...CoordinatesCoordinates
+        }
+      }
+      """
+
+    public static let possibleTypes: [String] = ["Polygon"]
+
+    public static var selections: [GraphQLSelection] {
+      return [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("points", type: .nonNull(.list(.nonNull(.object(Point.selections))))),
+      ]
+    }
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(points: [Point]) {
+      self.init(unsafeResultMap: ["__typename": "Polygon", "points": points.map { (value: Point) -> ResultMap in value.resultMap }])
+    }
+
+    public var __typename: String {
+      get {
+        return resultMap["__typename"]! as! String
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "__typename")
+      }
+    }
+
+    public var points: [Point] {
+      get {
+        return (resultMap["points"] as! [ResultMap]).map { (value: ResultMap) -> Point in Point(unsafeResultMap: value) }
+      }
+      set {
+        resultMap.updateValue(newValue.map { (value: Point) -> ResultMap in value.resultMap }, forKey: "points")
+      }
+    }
+
+    public struct Point: GraphQLSelectionSet {
+      public static let possibleTypes: [String] = ["Coordinates"]
+
+      public static var selections: [GraphQLSelection] {
+        return [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLFragmentSpread(CoordinatesCoordinates.self),
+        ]
+      }
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public init(latitude: Double, longitude: Double) {
+        self.init(unsafeResultMap: ["__typename": "Coordinates", "latitude": latitude, "longitude": longitude])
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var fragments: Fragments {
+        get {
+          return Fragments(unsafeResultMap: resultMap)
+        }
+        set {
+          resultMap += newValue.resultMap
+        }
+      }
+
+      public struct Fragments {
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+          self.resultMap = unsafeResultMap
+        }
+
+        public var coordinatesCoordinates: CoordinatesCoordinates {
+          get {
+            return CoordinatesCoordinates(unsafeResultMap: resultMap)
+          }
+          set {
+            resultMap += newValue.resultMap
+          }
+        }
+      }
+    }
+  }
+
+  public struct MultiPolygonMultiPolygon: GraphQLFragment {
+    /// The raw GraphQL definition of this fragment.
+    public static let fragmentDefinition: String =
+      """
+      fragment MultiPolygonMultiPolygon on MultiPolygon {
+        __typename
+        polygons {
+          __typename
+          ...PolygonPolygon
+        }
+      }
+      """
+
+    public static let possibleTypes: [String] = ["MultiPolygon"]
+
+    public static var selections: [GraphQLSelection] {
+      return [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("polygons", type: .nonNull(.list(.nonNull(.object(Polygon.selections))))),
+      ]
+    }
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(polygons: [Polygon]) {
+      self.init(unsafeResultMap: ["__typename": "MultiPolygon", "polygons": polygons.map { (value: Polygon) -> ResultMap in value.resultMap }])
+    }
+
+    public var __typename: String {
+      get {
+        return resultMap["__typename"]! as! String
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "__typename")
+      }
+    }
+
+    public var polygons: [Polygon] {
+      get {
+        return (resultMap["polygons"] as! [ResultMap]).map { (value: ResultMap) -> Polygon in Polygon(unsafeResultMap: value) }
+      }
+      set {
+        resultMap.updateValue(newValue.map { (value: Polygon) -> ResultMap in value.resultMap }, forKey: "polygons")
+      }
+    }
+
+    public struct Polygon: GraphQLSelectionSet {
+      public static let possibleTypes: [String] = ["Polygon"]
+
+      public static var selections: [GraphQLSelection] {
+        return [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLFragmentSpread(PolygonPolygon.self),
+        ]
+      }
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var fragments: Fragments {
+        get {
+          return Fragments(unsafeResultMap: resultMap)
+        }
+        set {
+          resultMap += newValue.resultMap
+        }
+      }
+
+      public struct Fragments {
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+          self.resultMap = unsafeResultMap
+        }
+
+        public var polygonPolygon: PolygonPolygon {
+          get {
+            return PolygonPolygon(unsafeResultMap: resultMap)
+          }
+          set {
+            resultMap += newValue.resultMap
+          }
         }
       }
     }
@@ -5667,7 +6504,16 @@ public enum ApolloCovid {
       """
       fragment CountryMapPinCountry on Country {
         __typename
-        cases
+        active
+        geometry {
+          __typename
+          ... on MultiPolygon {
+            ...MultiPolygonMultiPolygon
+          }
+          ... on Polygon {
+            ...PolygonPolygon
+          }
+        }
         info {
           __typename
           latitude
@@ -5681,7 +6527,8 @@ public enum ApolloCovid {
     public static var selections: [GraphQLSelection] {
       return [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-        GraphQLField("cases", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("active", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("geometry", type: .object(Geometry.selections)),
         GraphQLField("info", type: .nonNull(.object(Info.selections))),
       ]
     }
@@ -5692,8 +6539,8 @@ public enum ApolloCovid {
       self.resultMap = unsafeResultMap
     }
 
-    public init(cases: Int, info: Info) {
-      self.init(unsafeResultMap: ["__typename": "Country", "cases": cases, "info": info.resultMap])
+    public init(active: Int, geometry: Geometry? = nil, info: Info) {
+      self.init(unsafeResultMap: ["__typename": "Country", "active": active, "geometry": geometry.flatMap { (value: Geometry) -> ResultMap in value.resultMap }, "info": info.resultMap])
     }
 
     public var __typename: String {
@@ -5705,12 +6552,21 @@ public enum ApolloCovid {
       }
     }
 
-    public var cases: Int {
+    public var active: Int {
       get {
-        return resultMap["cases"]! as! Int
+        return resultMap["active"]! as! Int
       }
       set {
-        resultMap.updateValue(newValue, forKey: "cases")
+        resultMap.updateValue(newValue, forKey: "active")
+      }
+    }
+
+    public var geometry: Geometry? {
+      get {
+        return (resultMap["geometry"] as? ResultMap).flatMap { Geometry(unsafeResultMap: $0) }
+      }
+      set {
+        resultMap.updateValue(newValue?.resultMap, forKey: "geometry")
       }
     }
 
@@ -5720,6 +6576,162 @@ public enum ApolloCovid {
       }
       set {
         resultMap.updateValue(newValue.resultMap, forKey: "info")
+      }
+    }
+
+    public struct Geometry: GraphQLSelectionSet {
+      public static let possibleTypes: [String] = ["Polygon", "MultiPolygon"]
+
+      public static var selections: [GraphQLSelection] {
+        return [
+          GraphQLTypeCase(
+            variants: ["MultiPolygon": AsMultiPolygon.selections, "Polygon": AsPolygon.selections],
+            default: [
+              GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+            ]
+          )
+        ]
+      }
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var asMultiPolygon: AsMultiPolygon? {
+        get {
+          if !AsMultiPolygon.possibleTypes.contains(__typename) { return nil }
+          return AsMultiPolygon(unsafeResultMap: resultMap)
+        }
+        set {
+          guard let newValue = newValue else { return }
+          resultMap = newValue.resultMap
+        }
+      }
+
+      public struct AsMultiPolygon: GraphQLSelectionSet {
+        public static let possibleTypes: [String] = ["MultiPolygon"]
+
+        public static var selections: [GraphQLSelection] {
+          return [
+            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+            GraphQLFragmentSpread(MultiPolygonMultiPolygon.self),
+          ]
+        }
+
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+          self.resultMap = unsafeResultMap
+        }
+
+        public var __typename: String {
+          get {
+            return resultMap["__typename"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var fragments: Fragments {
+          get {
+            return Fragments(unsafeResultMap: resultMap)
+          }
+          set {
+            resultMap += newValue.resultMap
+          }
+        }
+
+        public struct Fragments {
+          public private(set) var resultMap: ResultMap
+
+          public init(unsafeResultMap: ResultMap) {
+            self.resultMap = unsafeResultMap
+          }
+
+          public var multiPolygonMultiPolygon: MultiPolygonMultiPolygon {
+            get {
+              return MultiPolygonMultiPolygon(unsafeResultMap: resultMap)
+            }
+            set {
+              resultMap += newValue.resultMap
+            }
+          }
+        }
+      }
+
+      public var asPolygon: AsPolygon? {
+        get {
+          if !AsPolygon.possibleTypes.contains(__typename) { return nil }
+          return AsPolygon(unsafeResultMap: resultMap)
+        }
+        set {
+          guard let newValue = newValue else { return }
+          resultMap = newValue.resultMap
+        }
+      }
+
+      public struct AsPolygon: GraphQLSelectionSet {
+        public static let possibleTypes: [String] = ["Polygon"]
+
+        public static var selections: [GraphQLSelection] {
+          return [
+            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+            GraphQLFragmentSpread(PolygonPolygon.self),
+          ]
+        }
+
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+          self.resultMap = unsafeResultMap
+        }
+
+        public var __typename: String {
+          get {
+            return resultMap["__typename"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var fragments: Fragments {
+          get {
+            return Fragments(unsafeResultMap: resultMap)
+          }
+          set {
+            resultMap += newValue.resultMap
+          }
+        }
+
+        public struct Fragments {
+          public private(set) var resultMap: ResultMap
+
+          public init(unsafeResultMap: ResultMap) {
+            self.resultMap = unsafeResultMap
+          }
+
+          public var polygonPolygon: PolygonPolygon {
+            get {
+              return PolygonPolygon(unsafeResultMap: resultMap)
+            }
+            set {
+              resultMap += newValue.resultMap
+            }
+          }
+        }
       }
     }
 
@@ -5907,11 +6919,11 @@ public enum ApolloCovid {
     }
   }
 
-  public struct StatsViewAffected: GraphQLFragment {
+  public struct StatsViewIAffected: GraphQLFragment {
     /// The raw GraphQL definition of this fragment.
     public static let fragmentDefinition: String =
       """
-      fragment StatsViewAffected on Affected {
+      fragment StatsViewIAffected on IAffected {
         __typename
         cases
         deaths
@@ -5919,7 +6931,7 @@ public enum ApolloCovid {
       }
       """
 
-    public static let possibleTypes: [String] = ["Country", "DetailedContinent", "World", "__Affected", "__Continent", "__DetailedAffected"]
+    public static let possibleTypes: [String] = ["Affected", "Continent", "Country", "DetailedAffected", "DetailedContinent", "World"]
 
     public static var selections: [GraphQLSelection] {
       return [
@@ -5936,28 +6948,28 @@ public enum ApolloCovid {
       self.resultMap = unsafeResultMap
     }
 
-    public static func makeCountry(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "Country", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeAffected(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "Affected", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func makeDetailedContinent(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "DetailedContinent", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeContinent(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "Continent", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func makeWorld(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "World", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeCountry(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "Country", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func make__Affected(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "__Affected", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeDetailedAffected(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "DetailedAffected", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func make__Continent(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "__Continent", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeDetailedContinent(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "DetailedContinent", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
-    public static func make__DetailedAffected(cases: Int, deaths: Int, recovered: Int) -> StatsViewAffected {
-      return StatsViewAffected(unsafeResultMap: ["__typename": "__DetailedAffected", "cases": cases, "deaths": deaths, "recovered": recovered])
+    public static func makeWorld(cases: Int, deaths: Int, recovered: Int) -> StatsViewIAffected {
+      return StatsViewIAffected(unsafeResultMap: ["__typename": "World", "cases": cases, "deaths": deaths, "recovered": recovered])
     }
 
     public var __typename: String {
@@ -6003,7 +7015,7 @@ public enum ApolloCovid {
       """
       fragment CurrentStateCellWorld on World {
         __typename
-        ...StatsViewAffected
+        ...StatsViewIAffected
       }
       """
 
@@ -6012,7 +7024,7 @@ public enum ApolloCovid {
     public static var selections: [GraphQLSelection] {
       return [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-        GraphQLFragmentSpread(StatsViewAffected.self),
+        GraphQLFragmentSpread(StatsViewIAffected.self),
       ]
     }
 
@@ -6051,9 +7063,9 @@ public enum ApolloCovid {
         self.resultMap = unsafeResultMap
       }
 
-      public var statsViewAffected: StatsViewAffected {
+      public var statsViewIAffected: StatsViewIAffected {
         get {
-          return StatsViewAffected(unsafeResultMap: resultMap)
+          return StatsViewIAffected(unsafeResultMap: resultMap)
         }
         set {
           resultMap += newValue.resultMap
@@ -6068,10 +7080,10 @@ public enum ApolloCovid {
       """
       fragment FeaturedCountryCellCountry on Country {
         __typename
-        ...StatsViewAffected
+        ...StatsViewIAffected
         info {
           __typename
-          iso2
+          emoji
         }
         name
         timeline {
@@ -6093,7 +7105,7 @@ public enum ApolloCovid {
     public static var selections: [GraphQLSelection] {
       return [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-        GraphQLFragmentSpread(StatsViewAffected.self),
+        GraphQLFragmentSpread(StatsViewIAffected.self),
         GraphQLField("info", type: .nonNull(.object(Info.selections))),
         GraphQLField("name", type: .nonNull(.scalar(String.self))),
         GraphQLField("timeline", type: .nonNull(.object(Timeline.selections))),
@@ -6168,9 +7180,9 @@ public enum ApolloCovid {
         self.resultMap = unsafeResultMap
       }
 
-      public var statsViewAffected: StatsViewAffected {
+      public var statsViewIAffected: StatsViewIAffected {
         get {
-          return StatsViewAffected(unsafeResultMap: resultMap)
+          return StatsViewIAffected(unsafeResultMap: resultMap)
         }
         set {
           resultMap += newValue.resultMap
@@ -6184,7 +7196,7 @@ public enum ApolloCovid {
       public static var selections: [GraphQLSelection] {
         return [
           GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
-          GraphQLField("iso2", type: .scalar(String.self)),
+          GraphQLField("emoji", type: .scalar(String.self)),
         ]
       }
 
@@ -6194,8 +7206,8 @@ public enum ApolloCovid {
         self.resultMap = unsafeResultMap
       }
 
-      public init(iso2: String? = nil) {
-        self.init(unsafeResultMap: ["__typename": "Info", "iso2": iso2])
+      public init(emoji: String? = nil) {
+        self.init(unsafeResultMap: ["__typename": "Info", "emoji": emoji])
       }
 
       public var __typename: String {
@@ -6207,12 +7219,12 @@ public enum ApolloCovid {
         }
       }
 
-      public var iso2: String? {
+      public var emoji: String? {
         get {
-          return resultMap["iso2"] as? String
+          return resultMap["emoji"] as? String
         }
         set {
-          resultMap.updateValue(newValue, forKey: "iso2")
+          resultMap.updateValue(newValue, forKey: "emoji")
         }
       }
     }

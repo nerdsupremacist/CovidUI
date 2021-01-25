@@ -4,12 +4,12 @@ import SwiftUI
 import Neumorphic
 
 struct CurrentStateCell: View {
-    @GraphQL(Covid.World.affected)
-    var affected: StatsView.Affected
+    @GraphQL(Covid.World.iAffected)
+    var affected: StatsView.IAffected
 
     var body: some View {
         NeumporphicCard {
-            StatsView(affected: affected).padding(.horizontal, 32)
+            StatsView(iAffected: affected).padding(.horizontal, 32)
         }
     }
 

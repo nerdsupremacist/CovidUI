@@ -1,0 +1,7 @@
+strings:
+    inputs:
+    - Languages.strings
+    - Languages.stringsdict
+    outputs:
+    - templateName: structured-swift5
+      output: Strings+Generated.swift

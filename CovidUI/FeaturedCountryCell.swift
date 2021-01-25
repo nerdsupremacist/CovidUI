@@ -10,11 +10,11 @@ struct FeaturedCountryCell: View {
     @GraphQL(Covid.Country.name)
     var name
 
-    @GraphQL(Covid.Country.info.iso2)
-    var countryCode
+    @GraphQL(Covid.Country.info.emoji)
+    var emoji
 
-    @GraphQL(Covid.Country.affected)
-    var affected: StatsView.Affected
+    @GraphQL(Covid.Country.iAffected)
+    var affected: StatsView.IAffected
 
     @GraphQL(Covid.Country.todayDeaths)
     var todayDeaths
@@ -26,13 +26,13 @@ struct FeaturedCountryCell: View {
         NeumporphicCard {
             VStack(alignment: .leading) {
                 HStack {
-                    countryCode.flatMap(emoji(countryCode:)).map { Text($0).font(.title).fontWeight(.bold).foregroundColor(.primary) }
+                    emoji.map { Text($0).font(.title).fontWeight(.bold).foregroundColor(.primary) }
                     Text(self.name).font(.title).fontWeight(.bold).foregroundColor(.primary)
                 }
 
                 Spacer()
 
-                Text("\(todayDeaths) people died today in \(name).")
+                Text(L10n.Country.deaths(todayDeaths, name))
                     .font(.body)
                     .fontWeight(.light)
                     .lineLimit(0)
@@ -40,8 +40,13 @@ struct FeaturedCountryCell: View {
 
                 Spacer()
 
-                StatsView(affected: affected).padding(.horizontal, 16).padding(.top, 8)
-                LineView(data: casesOverTime.map(Double.init), title: "Timeline", style: ChartStyle.neumorphicColors(), valueSpecifier: "%.0f").frame(height: 340)
+                StatsView(iAffected: affected).padding(.horizontal, 16).padding(.top, 8)
+                LineView(
+                    data: casesOverTime.map(Double.init),
+                    title: L10n.Headline.timeline,
+                    style: ChartStyle.neumorphicColors(),
+                    valueSpecifier: "%.0f"
+                ).frame(height: 340)
             }.padding(.all, 16)
         }
     }

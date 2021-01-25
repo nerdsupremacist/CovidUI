@@ -9,21 +9,21 @@ struct BasicCountryCell: View {
     var name: String
 
     @GraphQL(Covid.Country.identifier)
-    var identifier: Covid.CountryIdentifier
+    var identifier
 
-    @GraphQL(Covid.Country.info.iso2)
-    var countryCode: String?
+    @GraphQL(Covid.Country.info.emoji)
+    var emoji
 
     @GraphQL(Covid.Country.cases)
-    var cases: Int
+    var cases
 
     var body: some View {
         NavigationLink(destination: api.countryDetailView(identifier: identifier)) {
             HStack {
-                countryCode.flatMap(emoji(countryCode:)).map { Text($0).bold().foregroundColor(.primary) }
+                emoji.map { Text($0).bold().foregroundColor(.primary) }
                 Text(name).bold().foregroundColor(.primary)
                 Spacer()
-                Text("\(cases) Cases").foregroundColor(.secondary)
+                Text(L10n.Cases.number(cases)).foregroundColor(.secondary)
             }
         }
     }

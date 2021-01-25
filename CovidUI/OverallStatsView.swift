@@ -10,19 +10,19 @@ import Foundation
 import SwiftUI
 
 struct StatsView: View {
-    @GraphQL(Covid.Affected.cases)
+    @GraphQL(Covid.IAffected.cases)
     var cases
 
-    @GraphQL(Covid.Affected.deaths)
+    @GraphQL(Covid.IAffected.deaths)
     var deaths
 
-    @GraphQL(Covid.Affected.recovered)
+    @GraphQL(Covid.IAffected.recovered)
     var recovered
 
     var body: some View {
         HStack {
             VStack {
-                Text("Cases").font(.headline).fontWeight(.bold).foregroundColor(.primary)
+                Text(L10n.Headline.cases).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                 Text(cases.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
             }
 
@@ -31,7 +31,7 @@ struct StatsView: View {
             Spacer()
 
             VStack {
-                Text("Deaths").font(.headline).fontWeight(.bold).foregroundColor(.primary)
+                Text(L10n.Headline.deaths).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                 Text(deaths.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
             }
 
@@ -40,10 +40,11 @@ struct StatsView: View {
             Spacer()
 
             VStack {
-                Text("Recovered").font(.headline).fontWeight(.bold).foregroundColor(.primary)
+                Text(L10n.Headline.recovered).font(.headline).fontWeight(.bold).foregroundColor(.primary)
                 Text(recovered.statFormatted).font(.callout).fontWeight(.medium).foregroundColor(.secondary)
             }
         }
+        .padding(.vertical, 16)
     }
 
 }

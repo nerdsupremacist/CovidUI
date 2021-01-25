@@ -23,7 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let api = Covid()
-        let contentView = api.contentView()
+        let contentView = api.contentView(first: 50)
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {

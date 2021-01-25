@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+  <dict>
+    <key>country.deaths</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@deaths@ died in %@ today.</string>
+        <key>deaths</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>zero</key>
+            <string>No one</string>
+            <key>one</key>
+            <string>One person</string>
+            <key>other</key>
+            <string>%d people</string>
+        </dict>
+    </dict>
+    <key>cases.number</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@cases@</string>
+        <key>cases</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>one</key>
+            <string>1 Case</string>
+            <key>other</key>
+            <string>%d Cases</string>
+        </dict>
+    </dict>
+    <key>deaths.number</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@deaths@</string>
+        <key>deaths</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>one</key>
+            <string>1 Death</string>
+            <key>other</key>
+            <string>%d Deaths</string>
+        </dict>
+    </dict>
+  </dict>
+</plist>
